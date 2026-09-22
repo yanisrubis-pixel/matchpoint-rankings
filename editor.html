@@ -277,6 +277,9 @@ function publish() {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Matchpoint Junior Rankings 2026-2027</title>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-85D8K0EYBM"><\/script>
@@ -377,6 +380,11 @@ function publish() {
 <button class="share-btn" onclick="shareLink()">🔗 Share</button>
 <div class="copied-toast" id="copiedToast">✅ Link copied!</div>
 <script>
+// Force reload on PWA
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+}
+
 function shareLink() {
   const url = 'https://matchpoint-rankings-production.up.railway.app';
   if (navigator.share) {
