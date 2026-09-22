@@ -260,7 +260,7 @@ function publish() {
       const badge = isTop ? ["🥇","🥈","🥉"][rank-1] : rank;
       const pct   = p.utr > 0 ? Math.min((p.utr/10)*100,100).toFixed(1) : 0;
       let changeHtml = '';
-      if (p.prevUtr && p.prevUtr > 0 && p.utr > 0) {
+      if (p.prevUtr && p.prevUtr > 0 && p.utr > 0 && p.utr !== p.prevUtr) {
         const diff = (p.utr - p.prevUtr).toFixed(2);
         if (diff > 0) changeHtml = `<div class="utr-change up">▲ +${diff}</div>`;
         else if (diff < 0) changeHtml = `<div class="utr-change down">▼ ${diff}</div>`;
@@ -278,6 +278,14 @@ function publish() {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Matchpoint Junior Rankings 2026-2027</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-85D8K0EYBM"><\/script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-85D8K0EYBM');
+<\/script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', system-ui, sans-serif; background: #F0F4F8; }
@@ -313,13 +321,15 @@ function publish() {
   .utr-value { font-size: 20px; font-weight: 800; color: #1F4E79; }
   .utr-value.zero { font-size: 13px; color: #CCC; }
   .utr-change { font-size: 11px; font-weight: 700; margin-top: 2px; }
-  .utr-change.up   { color: #1A6B3A; }
+  .utr-change.up { color: #1A6B3A; }
   .utr-change.down { color: #E74C3C; }
   .bar-wrap { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .bar-bg { flex: 1; height: 7px; background: #E8E8E8; border-radius: 4px; overflow: hidden; }
   .bar-fill { height: 100%; background: linear-gradient(90deg,#2E75B6,#1F4E79); border-radius: 4px; }
   .footer { padding: 10px 20px; font-size: 10px; color: #BBB; border-top: 1px solid #F0F0F0; text-align: center; }
-  .print-btn { position: fixed; bottom: 20px; right: 20px; background: #1F4E79; color: white; border: none; border-radius: 8px; padding: 11px 18px; font-weight: 700; font-size: 13px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+  .print-btn { position: fixed; bottom: 20px; right: 20px; background: #1F4E79; color: white; border: none; border-radius: 8px; padding: 11px 18px; font-weight: 700; font-size: 13px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.2); z-index: 999; }
+  .share-btn { position: fixed; bottom: 20px; left: 20px; background: #25D366; color: white; border: none; border-radius: 8px; padding: 11px 18px; font-weight: 700; font-size: 13px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.2); z-index: 999; }
+  .copied-toast { position: fixed; bottom: 70px; left: 20px; background: #333; color: white; padding: 8px 14px; border-radius: 6px; font-size: 12px; display: none; z-index: 999; }
   @media (max-width: 520px) {
     .board { margin: 8px; border-radius: 8px; }
     .header { padding: 14px; }
@@ -338,8 +348,10 @@ function publish() {
     .utr-value { font-size: 16px; }
     .utr-value.zero { font-size: 10px; }
     .utr-change { font-size: 10px; }
+    .print-btn { padding: 9px 14px; font-size: 12px; }
+    .share-btn { padding: 9px 14px; font-size: 12px; }
   }
-  @media print { .print-btn { display: none; } body { background: white; } .board { box-shadow: none; margin: 0; border-radius: 0; max-width: 100%; } }
+  @media print { .print-btn, .share-btn { display: none; } body { background: white; } .board { box-shadow: none; margin: 0; border-radius: 0; max-width: 100%; } }
 </style>
 </head>
 <body>
@@ -362,6 +374,22 @@ function publish() {
   <div class="footer">Matchpoint Tennis Club · Season 2026–2027</div>
 </div>
 <button class="print-btn" onclick="window.print()">🖨️ Print</button>
+<button class="share-btn" onclick="shareLink()">🔗 Share</button>
+<div class="copied-toast" id="copiedToast">✅ Link copied!</div>
+<script>
+function shareLink() {
+  const url = 'https://matchpoint-rankings-production.up.railway.app';
+  if (navigator.share) {
+    navigator.share({ title: 'Matchpoint Junior Rankings', url: url });
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      const t = document.getElementById('copiedToast');
+      t.style.display = 'block';
+      setTimeout(() => t.style.display = 'none', 2000);
+    });
+  }
+}
+<\/script>
 </body>
 </html>`;
 
