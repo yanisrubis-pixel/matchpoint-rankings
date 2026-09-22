@@ -95,6 +95,10 @@
     .utr-value.zero { font-size: 10px; }
   }
 
+
+  .share-btn { position: fixed; bottom: 20px; left: 20px; background: #25D366; color: white; border: none; border-radius: 8px; padding: 11px 18px; font-weight: 700; font-size: 13px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+  .share-btn:hover { background: #1DA851; }
+  .copied-toast { position: fixed; bottom: 70px; left: 20px; background: #333; color: white; padding: 8px 14px; border-radius: 6px; font-size: 12px; display: none; }
   @media print {
     .print-btn { display: none; }
     body { background: white; }
@@ -168,6 +172,23 @@ function render() {
   document.getElementById('board').innerHTML = html;
 }
 render();
+</script>
+
+<button class="share-btn" onclick="shareLink()">🔗 Share</button>
+<div class="copied-toast" id="copiedToast">✅ Link copied!</div>
+<script>
+function shareLink() {
+  const url = 'https://matchpoint-rankings-production.up.railway.app';
+  if (navigator.share) {
+    navigator.share({ title: 'Matchpoint Junior Rankings', url: url });
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      const t = document.getElementById('copiedToast');
+      t.style.display = 'block';
+      setTimeout(() => t.style.display = 'none', 2000);
+    });
+  }
+}
 </script>
 </body>
 </html>
