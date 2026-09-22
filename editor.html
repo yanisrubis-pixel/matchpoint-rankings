@@ -11,63 +11,69 @@
   .topbar h2 { font-size: 14px; font-weight: 700; }
   .topbar span { font-size: 11px; opacity: 0.8; }
   .board { max-width: 960px; margin: 16px auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.10); }
-  .header { background: linear-gradient(135deg, #1F4E79 0%, #2E75B6 100%); padding: 24px 28px; color: white; display: flex; justify-content: space-between; align-items: flex-start; }
-  .header-title { font-size: 24px; font-weight: 800; }
-  .header-sub { font-size: 11px; opacity: 0.75; margin-top: 4px; }
-  .header-date { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 14px; font-size: 11px; text-align: right; }
+  .header { background: linear-gradient(135deg, #1F4E79 0%, #2E75B6 100%); padding: 24px 28px 20px; color: white; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .header-eyebrow { font-size: 10px; letter-spacing: 2px; opacity: 0.65; margin-bottom: 5px; }
+  .header-title { font-size: 26px; font-weight: 800; }
+  .header-sub { font-size: 12px; opacity: 0.75; margin-top: 4px; }
+  .header-date { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 14px; font-size: 11px; text-align: right; flex-shrink: 0; }
   .stats { display: grid; grid-template-columns: repeat(4,1fr); background: #F7FAFF; border-bottom: 1px solid #E4EAF0; }
-  .stat { padding: 12px 16px; text-align: center; border-right: 1px solid #E4EAF0; }
+  .stat { padding: 14px 16px; text-align: center; border-right: 1px solid #E4EAF0; }
   .stat:last-child { border-right: none; }
-  .stat-num { font-size: 20px; font-weight: 800; color: #1F4E79; }
+  .stat-num { font-size: 22px; font-weight: 800; color: #1F4E79; }
   .stat-label { font-size: 10px; color: #999; margin-top: 2px; }
-  .section-header { padding: 7px 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; border-left: 4px solid; }
+  .section-header { padding: 8px 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; border-left: 4px solid; }
   .section-Elite       { background: #D6E4F0; color: #1F4E79; border-color: #1F4E79; }
   .section-Tournament  { background: #D4EDDA; color: #1A6B3A; border-color: #1A6B3A; }
   .section-Advanced    { background: #FDEBD0; color: #7B3F00; border-color: #E67E22; }
-  .player-row { display: grid; grid-template-columns: 40px 1fr 110px 80px 1fr 70px; gap: 10px; align-items: center; padding: 10px 20px; border-bottom: 1px solid #F5F5F5; }
+  .player-row { display: grid; grid-template-columns: 44px 1fr 110px 100px 1fr 70px; gap: 10px; align-items: center; padding: 11px 20px; border-bottom: 1px solid #F5F5F5; }
   .player-row:hover { background: #F5F8FF; }
   .player-row.top3 { background: #F7FAFF; }
-  .rank-badge { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
-  .rank-badge.top    { background: #1F4E79; color: white; font-size: 15px; }
+  .rank-badge { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
+  .rank-badge.top    { background: #1F4E79; color: white; font-size: 16px; }
   .rank-badge.normal { background: #EBEBEB; color: #666; }
-  .player-name { font-weight: 600; font-size: 13px; color: #1A1A1A; }
+  .player-info { min-width: 0; }
+  .player-name { font-weight: 600; font-size: 14px; color: #1A1A1A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .player-age  { font-size: 11px; color: #AAA; margin-top: 1px; }
   .level-badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-weight: 600; font-size: 10px; }
   .badge-Elite       { background: #D6E4F0; color: #1F4E79; }
   .badge-Tournament  { background: #D4EDDA; color: #1A6B3A; }
   .badge-Advanced    { background: #FDEBD0; color: #7B3F00; }
-  .utr-value      { font-size: 18px; font-weight: 800; color: #1F4E79; text-align: center; }
-  .utr-value.zero { font-size: 12px; color: #CCC; text-align: center; }
-  .bar-wrap { display: flex; align-items: center; gap: 8px; }
-  .bar-bg   { flex: 1; height: 6px; background: #E8E8E8; border-radius: 4px; overflow: hidden; }
+  .utr-cell { text-align: center; }
+  .utr-value      { font-size: 20px; font-weight: 800; color: #1F4E79; }
+  .utr-value.zero { font-size: 13px; color: #CCC; }
+  .utr-change { font-size: 11px; font-weight: 700; margin-top: 2px; }
+  .utr-change.up   { color: #1A6B3A; }
+  .utr-change.down { color: #E74C3C; }
+  .bar-wrap { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .bar-bg   { flex: 1; height: 7px; background: #E8E8E8; border-radius: 4px; overflow: hidden; }
   .bar-fill { height: 100%; background: linear-gradient(90deg,#2E75B6,#1F4E79); border-radius: 4px; }
   .action-btns { display: flex; gap: 4px; }
   .btn-edit { background: #E8F0FE; border: none; cursor: pointer; color: #1F4E79; font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 700; }
-  .btn-del  { background: none; border: none; cursor: pointer; color: #DDD; font-size: 14px; padding: 4px 6px; border-radius: 4px; }
+  .btn-del  { background: none; border: none; cursor: pointer; color: #DDD; font-size: 15px; padding: 4px 6px; border-radius: 4px; }
   .btn-del:hover { color: #E74C3C; background: #FEE; }
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
-  .modal { background: white; border-radius: 12px; padding: 24px; width: 380px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
-  .modal h3 { font-size: 15px; font-weight: 700; color: #1F4E79; margin-bottom: 14px; }
-  .modal label { font-size: 11px; font-weight: 700; color: #666; display: block; margin-bottom: 3px; margin-top: 10px; }
+  .modal { background: white; border-radius: 12px; padding: 24px; width: 400px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+  .modal h3 { font-size: 16px; font-weight: 700; color: #1F4E79; margin-bottom: 16px; }
+  .modal label { font-size: 11px; font-weight: 700; color: #666; display: block; margin-bottom: 4px; margin-top: 12px; }
   .modal input, .modal select { width: 100%; padding: 8px 12px; border: 1px solid #DDD; border-radius: 6px; font-size: 13px; outline: none; }
-  .modal-btns { display: flex; gap: 8px; margin-top: 18px; justify-content: flex-end; }
+  .modal-btns { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
   .btn-save   { padding: 8px 20px; background: #1F4E79; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; }
   .btn-cancel { padding: 8px 14px; background: #F0F0F0; color: #555; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
-  .add-form { padding: 12px 20px; background: #FAFAFA; border-top: 1px solid #E8E8E8; }
-  .add-form label { font-size: 11px; font-weight: 700; color: #666; display: block; margin-bottom: 6px; }
+  .add-form { padding: 14px 20px; background: #FAFAFA; border-top: 1px solid #E8E8E8; }
+  .add-form label { font-size: 11px; font-weight: 700; color: #666; display: block; margin-bottom: 8px; }
   .add-form .fields { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  .add-form input, .add-form select { padding: 6px 10px; border: 1px solid #DDD; border-radius: 6px; font-size: 12px; outline: none; }
-  .btn-add { padding: 6px 14px; background: #1F4E79; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; }
-  .footer { padding: 8px 20px; font-size: 10px; color: #BBB; border-top: 1px solid #F0F0F0; text-align: center; }
+  .add-form input, .add-form select { padding: 7px 11px; border: 1px solid #DDD; border-radius: 6px; font-size: 12px; outline: none; }
+  .btn-add { padding: 7px 16px; background: #1F4E79; color: white; border: none; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; }
+  .footer { padding: 10px 20px; font-size: 10px; color: #BBB; border-top: 1px solid #F0F0F0; text-align: center; }
   .publish-btn { position: fixed; bottom: 24px; right: 24px; background: #1A6B3A; color: white; border: none; border-radius: 8px; padding: 13px 22px; font-weight: 700; font-size: 14px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
   .toast { position: fixed; bottom: 80px; right: 24px; color: white; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; display: none; z-index: 200; }
 </style>
 </head>
 <body>
 <div class="topbar">
-  <h2>✏️ EDITOR MODE — только для тебя</h2>
-  <span>Редактируй → нажми Publish → три команды в Terminal</span>
+  <h2>✏️ EDITOR MODE</h2>
+  <span>Edit → 🚀 Publish → команда в Terminal</span>
 </div>
 <div class="board" id="board"></div>
 <div class="modal-overlay" id="editModal">
@@ -85,7 +91,7 @@
     </div>
   </div>
 </div>
-<button class="publish-btn" onclick="publish()">🚀 Publish to Site</button>
+<button class="publish-btn" onclick="publish()">🚀 Publish</button>
 <div class="toast" id="toast"></div>
 <script>
 const LEVEL_ORDER = ["Elite","Tournament","Advanced"];
@@ -111,6 +117,14 @@ function showToast(msg, color="#1A6B3A") {
   setTimeout(() => t.style.display='none', 2500);
 }
 
+function getChange(p) {
+  if (!p.prevUtr || p.prevUtr === 0 || p.utr === 0) return '';
+  const diff = (p.utr - p.prevUtr).toFixed(2);
+  if (diff > 0) return `<div class="utr-change up">▲ +${diff}</div>`;
+  if (diff < 0) return `<div class="utr-change down">▼ ${diff}</div>`;
+  return '';
+}
+
 function render() {
   const sorted = [...players].sort((a,b) => b.utr - a.utr);
   const rated  = players.filter(p=>p.utr>0);
@@ -121,7 +135,7 @@ function render() {
   let html = `
   <div class="header">
     <div>
-      <div style="font-size:10px;letter-spacing:2px;opacity:.65;margin-bottom:6px">MATCHPOINT TENNIS CLUB — BAY PARKWAY, BROOKLYN</div>
+      <div class="header-eyebrow">MATCHPOINT TENNIS CLUB — BAY PARKWAY, BROOKLYN</div>
       <div class="header-title">Junior Player Rankings</div>
       <div class="header-sub">Universal Tennis Rating (UTR) · Season 2026–2027</div>
     </div>
@@ -145,12 +159,12 @@ function render() {
       const badge = isTop ? MEDALS[rank-1] : rank;
       const pct   = p.utr > 0 ? Math.min((p.utr/10)*100,100).toFixed(1) : 0;
       const utrHtml = p.utr > 0
-        ? `<div class="utr-value">${p.utr.toFixed(2)}</div>`
-        : `<div class="utr-value zero">—</div>`;
+        ? `<div class="utr-cell"><div class="utr-value">${p.utr.toFixed(2)}</div>${getChange(p)}</div>`
+        : `<div class="utr-cell"><div class="utr-value zero">—</div></div>`;
       html += `
       <div class="player-row ${isTop?'top3':''}">
         <div class="rank-badge ${isTop?'top':'normal'}">${badge}</div>
-        <div><div class="player-name">${p.name}</div><div class="player-age">Age ${p.age}</div></div>
+        <div class="player-info"><div class="player-name">${p.name}</div><div class="player-age">Age ${p.age}</div></div>
         <div><span class="level-badge badge-${level}">${level}</span></div>
         ${utrHtml}
         <div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div></div>
@@ -185,9 +199,9 @@ function addPlayer() {
   const level= document.getElementById('f-level').value;
   if (!name) { alert('Enter name'); return; }
   const maxId = players.length ? Math.max(...players.map(p=>p.id)) : 0;
-  players.push({ id: maxId+1, name, age, utr, level });
+  players.push({ id: maxId+1, name, age, utr, level, prevUtr: 0 });
   savePlayers(players); render();
-  showToast('✅ Added: ' + name);
+  showToast('Added: ' + name);
 }
 
 function delPlayer(id) {
@@ -213,12 +227,17 @@ function saveEdit() {
   const id    = parseInt(document.getElementById('edit-id').value);
   const name  = document.getElementById('edit-name').value.trim();
   const age   = parseInt(document.getElementById('edit-age').value) || 10;
-  const utr   = parseFloat(document.getElementById('edit-utr').value) || 0;
+  const newUtr= parseFloat(document.getElementById('edit-utr').value) || 0;
   const level = document.getElementById('edit-level').value;
   if (!name) return;
-  players = players.map(p => p.id===id ? {...p, name, age, utr, level} : p);
+  players = players.map(p => {
+    if (p.id !== id) return p;
+    // Save previous UTR when changing
+    const prevUtr = (p.utr && p.utr !== newUtr) ? p.utr : (p.prevUtr || 0);
+    return {...p, name, age, utr: newUtr, level, prevUtr};
+  });
   savePlayers(players); closeModal(); render();
-  showToast('✅ Saved!');
+  showToast('Saved!');
 }
 document.addEventListener('click', e => { if(e.target.id==='editModal') closeModal(); });
 
@@ -240,7 +259,15 @@ function publish() {
       const isTop = rank <= 3;
       const badge = isTop ? ["🥇","🥈","🥉"][rank-1] : rank;
       const pct   = p.utr > 0 ? Math.min((p.utr/10)*100,100).toFixed(1) : 0;
-      const utrHtml = p.utr > 0 ? `<div class="utr-value">${p.utr.toFixed(2)}</div>` : `<div class="utr-value zero">—</div>`;
+      let changeHtml = '';
+      if (p.prevUtr && p.prevUtr > 0 && p.utr > 0) {
+        const diff = (p.utr - p.prevUtr).toFixed(2);
+        if (diff > 0) changeHtml = `<div class="utr-change up">▲ +${diff}</div>`;
+        else if (diff < 0) changeHtml = `<div class="utr-change down">▼ ${diff}</div>`;
+      }
+      const utrHtml = p.utr > 0
+        ? `<div class="utr-cell"><div class="utr-value">${p.utr.toFixed(2)}</div>${changeHtml}</div>`
+        : `<div class="utr-cell"><div class="utr-value zero">—</div></div>`;
       tableHtml += `<div class="player-row ${isTop?'top3':''}"><div class="rank-badge ${isTop?'top':'normal'}">${badge}</div><div class="player-info"><div class="player-name">${p.name}</div><div class="player-age">Age ${p.age}</div></div><div class="badge-col"><span class="level-badge badge-${level}">${level}</span></div>${utrHtml}<div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div></div></div>`;
     });
   });
@@ -269,7 +296,7 @@ function publish() {
   .section-Elite { background: #D6E4F0; color: #1F4E79; border-color: #1F4E79; }
   .section-Tournament { background: #D4EDDA; color: #1A6B3A; border-color: #1A6B3A; }
   .section-Advanced { background: #FDEBD0; color: #7B3F00; border-color: #E67E22; }
-  .player-row { display: grid; grid-template-columns: 44px 1fr 110px 80px 1fr; gap: 12px; align-items: center; padding: 11px 20px; border-bottom: 1px solid #F5F5F5; }
+  .player-row { display: grid; grid-template-columns: 44px 1fr 110px 100px 1fr; gap: 12px; align-items: center; padding: 11px 20px; border-bottom: 1px solid #F5F5F5; }
   .player-row.top3 { background: #F7FAFF; }
   .badge-col { display: block; }
   .rank-badge { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
@@ -282,8 +309,12 @@ function publish() {
   .badge-Elite { background: #D6E4F0; color: #1F4E79; }
   .badge-Tournament { background: #D4EDDA; color: #1A6B3A; }
   .badge-Advanced { background: #FDEBD0; color: #7B3F00; }
-  .utr-value { font-size: 20px; font-weight: 800; color: #1F4E79; text-align: center; white-space: nowrap; }
-  .utr-value.zero { font-size: 13px; color: #CCC; text-align: center; }
+  .utr-cell { text-align: center; }
+  .utr-value { font-size: 20px; font-weight: 800; color: #1F4E79; }
+  .utr-value.zero { font-size: 13px; color: #CCC; }
+  .utr-change { font-size: 11px; font-weight: 700; margin-top: 2px; }
+  .utr-change.up   { color: #1A6B3A; }
+  .utr-change.down { color: #E74C3C; }
   .bar-wrap { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .bar-bg { flex: 1; height: 7px; background: #E8E8E8; border-radius: 4px; overflow: hidden; }
   .bar-fill { height: 100%; background: linear-gradient(90deg,#2E75B6,#1F4E79); border-radius: 4px; }
@@ -298,7 +329,7 @@ function publish() {
     .stat-num { font-size: 17px; }
     .stat-label { font-size: 8px; }
     .section-header { padding: 6px 12px; font-size: 10px; }
-    .player-row { grid-template-columns: 32px 1fr 60px 80px; gap: 8px; padding: 9px 12px; }
+    .player-row { grid-template-columns: 32px 1fr 80px 80px; gap: 8px; padding: 9px 12px; }
     .badge-col { display: none; }
     .rank-badge { width: 28px; height: 28px; font-size: 11px; }
     .rank-badge.top { font-size: 13px; }
@@ -306,6 +337,7 @@ function publish() {
     .player-age { font-size: 9px; }
     .utr-value { font-size: 16px; }
     .utr-value.zero { font-size: 10px; }
+    .utr-change { font-size: 10px; }
   }
   @media print { .print-btn { display: none; } body { background: white; } .board { box-shadow: none; margin: 0; border-radius: 0; max-width: 100%; } }
 </style>
@@ -340,7 +372,7 @@ function publish() {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  showToast('🚀 Published! Run git commands.');
+  showToast('🚀 Published!');
 }
 
 render();
