@@ -83,6 +83,8 @@
     <label>Full Name</label><input id="edit-name">
     <label>Age</label><input id="edit-age" type="number">
     <label>UTR Rating</label><input id="edit-utr" type="number" step="0.01" placeholder="7.50">
+    <label>UTR ID (число из URL профиля на utrsports.net)</label>
+    <input id="edit-utrid" placeholder="например: 123456">
     <label>Group</label>
     <select id="edit-level"><option>Elite</option><option>Tournament</option><option>Advanced</option></select>
     <div class="modal-btns">
@@ -164,7 +166,7 @@ function render() {
       html += `
       <div class="player-row ${isTop?'top3':''}">
         <div class="rank-badge ${isTop?'top':'normal'}">${badge}</div>
-        <div class="player-info"><div class="player-name">${p.name}</div><div class="player-age">Age ${p.age}</div></div>
+        <div class="player-info"><div class="player-name">${p.name}</div><div class="player-age">Age ${p.age}${p.utrId ? ' · ID: '+p.utrId : ' · no ID'}</div></div>
         <div><span class="level-badge badge-${level}">${level}</span></div>
         ${utrHtml}
         <div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div></div>
@@ -219,6 +221,7 @@ function openEdit(id) {
   document.getElementById('edit-name').value  = p.name;
   document.getElementById('edit-age').value   = p.age;
   document.getElementById('edit-utr').value   = p.utr || '';
+  document.getElementById('edit-utrid').value = p.utrId || '';
   document.getElementById('edit-level').value = p.level;
   document.getElementById('editModal').classList.add('open');
 }
@@ -228,13 +231,13 @@ function saveEdit() {
   const name  = document.getElementById('edit-name').value.trim();
   const age   = parseInt(document.getElementById('edit-age').value) || 10;
   const newUtr= parseFloat(document.getElementById('edit-utr').value) || 0;
+  const utrId = document.getElementById('edit-utrid').value.trim();
   const level = document.getElementById('edit-level').value;
   if (!name) return;
   players = players.map(p => {
     if (p.id !== id) return p;
-    // Save previous UTR when changing
     const prevUtr = (p.utr && p.utr !== newUtr) ? p.utr : (p.prevUtr || 0);
-    return {...p, name, age, utr: newUtr, level, prevUtr};
+    return {...p, name, age, utr: newUtr, utrId, level, prevUtr};
   });
   savePlayers(players); closeModal(); render();
   showToast('Saved!');
