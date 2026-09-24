@@ -1,7 +1,6 @@
 """
 Matchpoint UTR Auto-Updater
 Запуск: python3 update_utr.py
-Читает данные из index.html, тянет UTR, сохраняет обратно.
 """
 
 import requests, json, re, time, os
@@ -40,11 +39,11 @@ def main():
     with open(index_path, 'r') as f:
         content = f.read()
 
-    # Read player data from embedded JSON script tag
-    match = re.search(r'<script id="player-data" type="application/json">(.*?)<\/script>', content, re.DOTALL)
+    # Read player data from embedded JSON
+    match = re.search(r'<script id="player-data" type="application/json">(.*?)</script>', content, re.DOTALL)
     if not match:
-        print("ERROR: No player data found in index.html")
-        print("Please do Publish from editor.html first")
+        print("ERROR: No player data in index.html")
+        print("Do Publish from editor.html first, then run this script")
         return
 
     players = json.loads(match.group(1))
@@ -59,10 +58,10 @@ def main():
     for p in players:
         utr_id = str(p.get('utrId', '')).strip()
         if not utr_id:
-            print(f"  ⏭  {p['name']:<28} no ID")
+            print(f"  skip  {p['name']:<28} no ID")
             continue
 
-        print(f"  ↓  {p['name']:<28} ID:{utr_id} ... ", end='', flush=True)
+        print(f"  fetch {p['name']:<28} ID:{utr_id} ... ", end='', flush=True)
         new_utr = fetch_utr(utr_id)
 
         if new_utr:
@@ -70,39 +69,36 @@ def main():
             if old_utr and old_utr != new_utr:
                 p['prevUtr'] = old_utr
             p['utr'] = new_utr
-            arrow = f" ▲+{new_utr-old_utr:.2f}" if old_utr and new_utr > old_utr else \
-                    f" ▼{new_utr-old_utr:.2f}" if old_utr and new_utr < old_utr else ""
+            arrow = ""
+            if old_utr:
+                diff = new_utr - old_utr
+                if diff > 0.01: arrow = f" ▲+{diff:.2f}"
+                elif diff < -0.01: arrow = f" ▼{diff:.2f}"
             print(f"{new_utr:.2f}{arrow}")
             updated += 1
         else:
             print("not found")
         time.sleep(0.4)
 
-    # Update player data in index.html
+    if updated == 0:
+        print("\nNo updates. Exiting.")
+        return
+
+    # ONLY update the JSON data tag — nothing else in HTML
     new_data = json.dumps(players, ensure_ascii=False)
     new_content = re.sub(
-        r'<script id="player-data" type="application/json">.*?<\/script>',
-        f'<script id="player-data" type="application/json">{new_data}<\/script>',
-        content, flags=re.DOTALL
+        r'<script id="player-data" type="application/json">.*?</script>',
+        f'<script id="player-data" type="application/json">{new_data}</script>',
+        content,
+        flags=re.DOTALL
     )
-
-    # Also update the visual table
-    sorted_players = sorted(players, key=lambda x: x.get('utr',0), reverse=True)
-    rated = [p for p in players if p.get('utr',0)>0]
-    avg = f"{sum(p['utr'] for p in rated)/len(rated):.2f}" if rated else "—"
-    top = f"{max(p['utr'] for p in rated):.2f}" if rated else "—"
-    elite = sum(1 for p in players if p.get('level')=='Elite')
-
-    # Update stats
-    new_content = re.sub(r'(<div class="stat-num">)\d+(\s*</div>\s*<div class="stat-label">Total)', 
-                         f'\\g<1>{len(players)}\\2', new_content)
 
     with open(index_path, 'w') as f:
         f.write(new_content)
 
     print(f"\n{'='*45}")
     print(f"Updated: {updated} players")
-    print(f"Saved to index.html — ready to git push")
+    print(f"Saved. Now run: git add . && git commit -m 'Update UTR' && git push")
     print(f"{'='*45}\n")
 
 if __name__ == "__main__":
