@@ -245,6 +245,9 @@ function saveEdit() {
 document.addEventListener('click', e => { if(e.target.id==='editModal') closeModal(); });
 
 function publish() {
+  // Save current players to localStorage first
+  savePlayers(players);
+  
   const sorted = [...players].sort((a,b) => b.utr - a.utr);
   const rated  = players.filter(p=>p.utr>0);
   const avg    = rated.length ? (rated.reduce((s,p)=>s+p.utr,0)/rated.length).toFixed(2) : "—";
@@ -275,6 +278,9 @@ function publish() {
     });
   });
 
+  // Embed player data as JSON for update_utr.py script
+  const playerData = JSON.stringify(players);
+
   const publicHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -292,6 +298,8 @@ function publish() {
   gtag('js', new Date());
   gtag('config', 'G-85D8K0EYBM');
 <\/script>
+<!-- PLAYER DATA FOR AUTO-UPDATE -->
+<script id="player-data" type="application/json">${playerData}<\/script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', system-ui, sans-serif; background: #F0F4F8; }
@@ -383,11 +391,6 @@ function publish() {
 <button class="share-btn" onclick="shareLink()">🔗 Share</button>
 <div class="copied-toast" id="copiedToast">✅ Link copied!</div>
 <script>
-// Force reload on PWA
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
-}
-
 function shareLink() {
   const url = 'https://matchpoint-rankings-production.up.railway.app';
   if (navigator.share) {
@@ -399,6 +402,10 @@ function shareLink() {
       setTimeout(() => t.style.display = 'none', 2000);
     });
   }
+}
+// Force reload on PWA
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
 }
 <\/script>
 </body>

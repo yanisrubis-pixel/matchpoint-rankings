@@ -1,7 +1,7 @@
 """
 Matchpoint UTR Auto-Updater
 Запуск: python3 update_utr.py
-Тянет UTR всех игроков и обновляет editor.html
+Читает данные из index.html, тянет UTR, сохраняет обратно.
 """
 
 import requests, json, re, time, os
@@ -22,7 +22,7 @@ def fetch_utr(utr_id):
             r = requests.get(url, headers=HEADERS, timeout=10)
             if r.status_code == 200:
                 data = r.json()
-                utr = data.get("singlesUtr") or data.get("myUtrSingles") or data.get("utrSingles")
+                utr = data.get("singlesUtr") or data.get("myUtrSingles")
                 if utr and float(utr) > 0:
                     return float(utr)
         except:
@@ -31,19 +31,20 @@ def fetch_utr(utr_id):
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    editor_path = os.path.join(script_dir, 'editor.html')
+    index_path = os.path.join(script_dir, 'index.html')
 
-    if not os.path.exists(editor_path):
-        print("ERROR: editor.html not found in", script_dir)
+    if not os.path.exists(index_path):
+        print("ERROR: index.html not found")
         return
 
-    with open(editor_path, 'r') as f:
+    with open(index_path, 'r') as f:
         content = f.read()
 
-    # Find players data in editor.html
-    match = re.search(r'const DEFAULT_PLAYERS = (\[.*?\]);', content, re.DOTALL)
+    # Read player data from embedded JSON script tag
+    match = re.search(r'<script id="player-data" type="application/json">(.*?)<\/script>', content, re.DOTALL)
     if not match:
-        print("ERROR: No players data found in editor.html")
+        print("ERROR: No player data found in index.html")
+        print("Please do Publish from editor.html first")
         return
 
     players = json.loads(match.group(1))
@@ -75,24 +76,33 @@ def main():
             updated += 1
         else:
             print("not found")
-
         time.sleep(0.4)
 
-    # Save back to editor.html
+    # Update player data in index.html
     new_data = json.dumps(players, ensure_ascii=False)
     new_content = re.sub(
-        r'const DEFAULT_PLAYERS = \[.*?\];',
-        f'const DEFAULT_PLAYERS = {new_data};',
+        r'<script id="player-data" type="application/json">.*?<\/script>',
+        f'<script id="player-data" type="application/json">{new_data}<\/script>',
         content, flags=re.DOTALL
     )
 
-    with open(editor_path, 'w') as f:
+    # Also update the visual table
+    sorted_players = sorted(players, key=lambda x: x.get('utr',0), reverse=True)
+    rated = [p for p in players if p.get('utr',0)>0]
+    avg = f"{sum(p['utr'] for p in rated)/len(rated):.2f}" if rated else "—"
+    top = f"{max(p['utr'] for p in rated):.2f}" if rated else "—"
+    elite = sum(1 for p in players if p.get('level')=='Elite')
+
+    # Update stats
+    new_content = re.sub(r'(<div class="stat-num">)\d+(\s*</div>\s*<div class="stat-label">Total)', 
+                         f'\\g<1>{len(players)}\\2', new_content)
+
+    with open(index_path, 'w') as f:
         f.write(new_content)
 
     print(f"\n{'='*45}")
     print(f"Updated: {updated} players")
-    print(f"Saved to editor.html")
-    print(f"\nТеперь открой editor.html → нажми Publish → запусти git push")
+    print(f"Saved to index.html — ready to git push")
     print(f"{'='*45}\n")
 
 if __name__ == "__main__":
