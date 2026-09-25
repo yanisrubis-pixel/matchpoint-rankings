@@ -166,7 +166,7 @@ function render() {
       html += `
       <div class="player-row ${isTop?'top3':''}">
         <div class="rank-badge ${isTop?'top':'normal'}">${badge}</div>
-        <div class="player-info"><div class="player-name">${p.name}</div><div class="player-age">Age ${p.age}${p.utrId ? ' · ID: '+p.utrId : ' · no ID'}</div></div>
+        <div class="player-info"><div class="player-name">${p.utrId ? `<a href="https://app.utrsports.net/profiles/${p.utrId}" target="_blank" style="color:#1A1A1A;text-decoration:none;border-bottom:1px dotted #AAA;" title="Open UTR profile">${p.name} ↗</a>` : p.name}</div><div class="player-age">Age ${p.age}${p.utrId ? ' · ID: '+p.utrId : ' · no ID'}</div></div>
         <div><span class="level-badge badge-${level}">${level}</span></div>
         ${utrHtml}
         <div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div></div>
