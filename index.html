@@ -122,7 +122,7 @@ function render(players) {
       let utrChange='';
       if(p.prevUtr&&p.prevUtr>0&&p.utr>0&&Math.abs(p.utr-p.prevUtr)>0.01){
         const diff=(p.utr-p.prevUtr).toFixed(2);
-        utrChange=diff>0?`<div class="utr-change up">▲ UTR +${diff}</div>`:`<div class="utr-change down">▼ UTR ${diff}</div>`;
+        utrChange=diff>0?`<div class="utr-change up">▲ +${diff}</div>`:`<div class="utr-change down">▼ ${diff}</div>`;
       }
 
       // Rank change arrow
