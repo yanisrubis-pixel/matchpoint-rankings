@@ -125,8 +125,15 @@ function render(players) {
         utrChange=diff>0?`<div class="utr-change up">▲ +${diff}</div>`:`<div class="utr-change down">▼ ${diff}</div>`;
       }
 
-const utrHtml=p.utr>0
-        ?`<div class="utr-cell"><div class="utr-value">${p.utr.toFixed(2)}</div>${utrChange}</div>`
+      // Rank change arrow
+      let rankChange='';
+      if(p.prevRank&&p.prevRank!==rank){
+        const diff=p.prevRank-rank;
+        rankChange=diff>0?`<div class="rank-change up">▲ +${diff} position</div>`:`<div class="rank-change down">▼ ${Math.abs(diff)} position</div>`;
+      }
+
+      const utrHtml=p.utr>0
+        ?`<div class="utr-cell"><div class="utr-value">${p.utr.toFixed(2)}</div>${utrChange}${rankChange}</div>`
         :`<div class="utr-cell"><div class="utr-value zero">—</div></div>`;
 
       html+=`<div class="player-row ${isTop?'top3':''}"><div class="rank-badge ${isTop?'top':'normal'}">${badge}</div><div class="player-info"><div class="player-name">${p.name}</div><div class="player-age">Age ${p.age}</div></div><div class="badge-col"><span class="level-badge badge-${level}">${level}</span></div>${utrHtml}<div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div></div></div>`;
