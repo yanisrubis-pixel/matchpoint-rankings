@@ -247,11 +247,6 @@ document.addEventListener('click', e => { if(e.target.id==='editModal') closeMod
 function publish() {
   savePlayers(players);
 
-  // Save current rank positions before publishing
-  const sorted = [...players].sort((a,b) => b.utr - a.utr);
-  sorted.forEach((p, i) => { p.prevRank = p.rank; p.rank = i + 1; });
-  savePlayers(players);
-
   const rated  = players.filter(p=>p.utr>0);
   const avg    = rated.length ? (rated.reduce((s,p)=>s+p.utr,0)/rated.length).toFixed(2) : "—";
   const top    = rated.length ? Math.max(...rated.map(p=>p.utr)).toFixed(2) : "—";
