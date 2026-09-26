@@ -25,7 +25,8 @@
   .section-Elite       { background: #D6E4F0; color: #1F4E79; border-color: #1F4E79; }
   .section-Tournament  { background: #D4EDDA; color: #1A6B3A; border-color: #1A6B3A; }
   .section-Advanced    { background: #FDEBD0; color: #7B3F00; border-color: #E67E22; }
-  .player-row { display: grid; grid-template-columns: 44px 1fr 110px 100px 1fr 70px; gap: 10px; align-items: center; padding: 11px 20px; border-bottom: 1px solid #F5F5F5; }
+  /* Editor player row — wider to fit singles+doubles */
+  .player-row { display: grid; grid-template-columns: 44px 1fr 110px 1fr 70px; gap: 10px; align-items: center; padding: 10px 20px; border-bottom: 1px solid #F5F5F5; }
   .player-row:hover { background: #F5F8FF; }
   .player-row.top3 { background: #F7FAFF; }
   .rank-badge { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
@@ -38,25 +39,33 @@
   .badge-Elite       { background: #D6E4F0; color: #1F4E79; }
   .badge-Tournament  { background: #D4EDDA; color: #1A6B3A; }
   .badge-Advanced    { background: #FDEBD0; color: #7B3F00; }
-  .utr-cell { text-align: center; }
-  .utr-value      { font-size: 20px; font-weight: 800; color: #1F4E79; }
-  .utr-value.zero { font-size: 13px; color: #CCC; }
-  .utr-change { font-size: 11px; font-weight: 700; margin-top: 2px; }
+  /* Dual UTR block for editor */
+  .utr-dual { display: flex; flex-direction: column; gap: 4px; }
+  .utr-row { display: flex; align-items: center; gap: 6px; }
+  .utr-icon { font-size: 13px; flex-shrink: 0; width: 18px; text-align: center; }
+  .utr-val { font-size: 15px; font-weight: 800; color: #1F4E79; min-width: 38px; }
+  .utr-val.zero { font-size: 12px; color: #CCC; font-weight: 400; }
+  .utr-change { font-size: 10px; font-weight: 700; }
   .utr-change.up   { color: #1A6B3A; }
   .utr-change.down { color: #E74C3C; }
-  .bar-wrap { display: flex; align-items: center; gap: 8px; min-width: 0; }
-  .bar-bg   { flex: 1; height: 7px; background: #E8E8E8; border-radius: 4px; overflow: hidden; }
-  .bar-fill { height: 100%; background: linear-gradient(90deg,#2E75B6,#1F4E79); border-radius: 4px; }
+  .bar-dual { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .bar-row { display: flex; align-items: center; gap: 5px; }
+  .bar-lbl { font-size: 10px; color: #AAA; width: 14px; flex-shrink: 0; }
+  .bar-bg   { flex: 1; height: 6px; background: #E8E8E8; border-radius: 3px; overflow: hidden; }
+  .bar-fill-s { height: 100%; background: linear-gradient(90deg,#2E75B6,#1F4E79); border-radius: 3px; }
+  .bar-fill-d { height: 100%; background: linear-gradient(90deg,#2E75B6,#1F4E79); border-radius: 3px; }
   .action-btns { display: flex; gap: 4px; }
   .btn-edit { background: #E8F0FE; border: none; cursor: pointer; color: #1F4E79; font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 700; }
   .btn-del  { background: none; border: none; cursor: pointer; color: #DDD; font-size: 15px; padding: 4px 6px; border-radius: 4px; }
   .btn-del:hover { color: #E74C3C; background: #FEE; }
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
-  .modal { background: white; border-radius: 12px; padding: 24px; width: 400px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+  .modal { background: white; border-radius: 12px; padding: 24px; width: 420px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
   .modal h3 { font-size: 16px; font-weight: 700; color: #1F4E79; margin-bottom: 16px; }
   .modal label { font-size: 11px; font-weight: 700; color: #666; display: block; margin-bottom: 4px; margin-top: 12px; }
   .modal input, .modal select { width: 100%; padding: 8px 12px; border: 1px solid #DDD; border-radius: 6px; font-size: 13px; outline: none; }
+  .modal-row { display: flex; gap: 10px; }
+  .modal-row > div { flex: 1; }
   .modal-btns { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
   .btn-save   { padding: 8px 20px; background: #1F4E79; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; }
   .btn-cancel { padding: 8px 14px; background: #F0F0F0; color: #555; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
@@ -76,34 +85,40 @@
   <span>Edit → 🚀 Publish → команда в Terminal</span>
 </div>
 <div class="board" id="board"></div>
+
 <div class="modal-overlay" id="editModal">
   <div class="modal">
     <h3>Edit Player</h3>
     <input type="hidden" id="edit-id">
     <label>Full Name</label><input id="edit-name">
-    <label>Age</label><input id="edit-age" type="number">
-    <label>UTR Rating</label><input id="edit-utr" type="number" step="0.01" placeholder="7.50">
+    <div class="modal-row">
+      <div><label>Age</label><input id="edit-age" type="number"></div>
+      <div><label>Group</label><select id="edit-level"><option>Elite</option><option>Tournament</option><option>Advanced</option></select></div>
+    </div>
+    <div class="modal-row">
+      <div><label>👤 Singles UTR</label><input id="edit-utr" type="number" step="0.01" placeholder="7.50"></div>
+      <div><label>👥 Doubles UTR</label><input id="edit-utrd" type="number" step="0.01" placeholder="6.00"></div>
+    </div>
     <label>UTR ID (число из URL профиля на utrsports.net)</label>
     <input id="edit-utrid" placeholder="например: 123456">
-    <label>Group</label>
-    <select id="edit-level"><option>Elite</option><option>Tournament</option><option>Advanced</option></select>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-save" onclick="saveEdit()">Save</button>
     </div>
   </div>
 </div>
+
 <button class="publish-btn" onclick="publish()">🚀 Publish</button>
 <div class="toast" id="toast"></div>
 <script>
 const LEVEL_ORDER = ["Elite","Tournament","Advanced"];
 const MEDALS = ["🥇","🥈","🥉"];
-const DEFAULT_PLAYERS = [{"id": 1, "name": "Henry Holtz", "age": 14, "utr": 8.27, "level": "Elite", "utrId": "1658473", "prevUtr": 0}, {"id": 2, "name": "Tate Halladay", "age": 14, "utr": 8.13, "level": "Elite", "utrId": "2675164", "prevUtr": 0}, {"id": 3, "name": "Buvan Muthusamy", "age": 14, "utr": 8.11, "level": "Elite", "utrId": "1863880", "prevUtr": 0}, {"id": 4, "name": "Mustafo Boboev", "age": 14, "utr": 7.09, "level": "Elite", "utrId": "3800943", "prevUtr": 0}, {"id": 5, "name": "Jacob Shvartsman", "age": 14, "utr": 0, "level": "Elite"}, {"id": 6, "name": "Ari Jakubowitz", "age": 14, "utr": 5.67, "level": "Elite", "utrId": "1601095", "prevUtr": 0}, {"id": 7, "name": "Gabriella Uruchima", "age": 14, "utr": 2.42, "level": "Tournament", "utrId": "5440961", "prevUtr": 0}, {"id": 8, "name": "William Yukhimets", "age": 13, "utr": 3.88, "level": "Tournament", "utrId": "4123933", "prevUtr": 0}, {"id": 9, "name": "Katie Kubiak", "age": 11, "utr": 4.82, "level": "Tournament", "utrId": "3817458", "prevUtr": 0}, {"id": 10, "name": "Philip Sheyer", "age": 12, "utr": 0, "level": "Tournament"}, {"id": 11, "name": "Benjamin Belenkiy", "age": 13, "utr": 3.72, "level": "Tournament", "utrId": "3059575", "prevUtr": 0}, {"id": 12, "name": "Aiden Vaysbaum", "age": 15, "utr": 4.26, "level": "Tournament", "utrId": "5898089", "prevUtr": 0}, {"id": 13, "name": "Ben Sutton", "age": 16, "utr": 0, "level": "Tournament"}, {"id": 14, "name": "Gavin Khalaf", "age": 14, "utr": 3.83, "level": "Tournament", "utrId": "2718538", "prevUtr": 0}, {"id": 15, "name": "Asher Tsapovski", "age": 12, "utr": 5.61, "level": "Tournament", "utrId": "2279699", "prevUtr": 0}, {"id": 16, "name": "Jaime Orendain", "age": 12, "utr": 4.65, "level": "Tournament", "utrId": "3398352", "prevUtr": 0}, {"id": 17, "name": "Raphael Gurevich", "age": 14, "utr": 3.38, "level": "Tournament", "utrId": "5568934", "prevUtr": 0}, {"id": 18, "name": "Sebastian Sherbin", "age": 13, "utr": 2.89, "level": "Tournament", "utrId": "3858774", "prevUtr": 0}, {"id": 19, "name": "Marcus Aiken", "age": 14, "utr": 2.85, "level": "Tournament", "utrId": "3748159", "prevUtr": 0}, {"id": 20, "name": "Sophia Menchini", "age": 13, "utr": 2.62, "level": "Tournament", "utrId": "5902641", "prevUtr": 0}, {"id": 21, "name": "Ogden Dawson", "age": 14, "utr": 1.28, "level": "Tournament", "utrId": "5913978", "prevUtr": 0}, {"id": 22, "name": "Eva Kirillova", "age": 13, "utr": 1.89, "level": "Tournament", "utrId": "4000625", "prevUtr": 0}, {"id": 23, "name": "Noah Pertanava", "age": 13, "utr": 0, "level": "Tournament"}, {"id": 24, "name": "Maxim Carbajo", "age": 14, "utr": 3.77, "level": "Tournament", "utrId": "6055677", "prevUtr": 0}, {"id": 25, "name": "Theodore Pertenava", "age": 11, "utr": 1.46, "level": "Tournament", "utrId": "3305076", "prevUtr": 0}, {"id": 26, "name": "Daniel Lvovskiy", "age": 13, "utr": 2.34, "level": "Tournament", "utrId": "5991559", "prevUtr": 0}, {"id": 27, "name": "Alexander Lin", "age": 16, "utr": 2.61, "level": "Tournament", "utrId": "3949703", "prevUtr": 0}, {"id": 28, "name": "Elias Pollinger", "age": 15, "utr": 0, "level": "Tournament"}, {"id": 29, "name": "Adriel Simon", "age": 14, "utr": 2.13, "level": "Tournament", "utrId": "3326228", "prevUtr": 0}, {"id": 30, "name": "Lia Hovhannisyan", "age": 13, "utr": 2.91, "level": "Tournament", "utrId": "2717730", "prevUtr": 0}, {"id": 31, "name": "Ellie Kurosman", "age": 13, "utr": 3.58, "level": "Tournament", "utrId": "3738538", "prevUtr": 0}, {"id": 32, "name": "Maxine De Guzman", "age": 11, "utr": 2.97, "level": "Tournament", "utrId": "3722865", "prevUtr": 0}, {"id": 33, "name": "Gabriella Dolob", "age": 12, "utr": 1.71, "level": "Tournament", "utrId": "3693307", "prevUtr": 0}, {"id": 34, "name": "Lorenzo Warra", "age": 17, "utr": 0, "level": "Tournament"}, {"id": 35, "name": "Abigail Simon", "age": 14, "utr": 3.64, "level": "Tournament", "utrId": "2861273", "prevUtr": 0}, {"id": 36, "name": "Ami Vitkin", "age": 11, "utr": 0, "level": "Advanced"}, {"id": 37, "name": "An Yu", "age": 10, "utr": 3.27, "level": "Advanced", "utrId": "3612646", "prevUtr": 0}, {"id": 38, "name": "Matt Huang", "age": 10, "utr": 0, "level": "Advanced"}, {"id": 39, "name": "Joshua Nudelman", "age": 11, "utr": 0, "level": "Advanced"}, {"id": 40, "name": "Sofimaie Hamhoev", "age": 11, "utr": 0, "level": "Advanced"}, {"id": 41, "name": "Ethan Malek", "age": 12, "utr": 0, "level": "Advanced"}, {"id": 42, "name": "Sofia Reznik", "age": 15, "utr": 0, "level": "Advanced"}, {"id": 43, "name": "Olivia Toell", "age": 11, "utr": 0, "level": "Advanced"}, {"id": 44, "name": "Jemma Zhang", "age": 8, "utr": 0, "level": "Advanced"}, {"id": 45, "name": "Stefania Kupershmidt", "age": 10, "utr": 1.05, "level": "Advanced", "utrId": "5939220", "prevUtr": 0}, {"id": 46, "name": "Angelina Decrescenzo", "age": 13, "utr": 0, "level": "Advanced"}, {"id": 47, "name": "Olivia Decrescenzo", "age": 13, "utr": 0, "level": "Advanced"}, {"id": 48, "name": "Brandon Maldonado", "age": 9, "utr": 2.54, "level": "Advanced", "utrId": "4666340", "prevUtr": 0}, {"id": 49, "name": "Misha Morbi Husain", "age": 9, "utr": 0, "level": "Advanced"}, {"id": 50, "name": "Maia Edelman", "age": 10, "utr": 0, "level": "Advanced"}, {"id": 51, "name": "Vladimir Stavitskii", "age": 11, "utr": 0, "level": "Advanced"}, {"id": 52, "name": "Anabelle Park", "age": 10, "utr": 0, "level": "Advanced"}, {"id": 53, "name": "Gabriella Korotkiy", "age": 11, "utr": 2.25, "level": "Advanced", "utrId": "3693308", "prevUtr": 0}, {"id": 54, "name": "Allison Gorokhovsky", "age": 12, "utr": 0, "level": "Advanced"}, {"id": 55, "name": "Riley Liang", "age": 13, "utr": 0, "level": "Advanced"}, {"id": 56, "name": "Aiden Zheng", "age": 13, "utr": 0, "level": "Advanced"}, {"id": 57, "name": "Alexandra Obolashvili", "age": 10, "utr": 0, "level": "Advanced"}, {"id": 58, "name": "Millie Rodriguez", "age": 11, "utr": 0, "level": "Advanced"}, {"id": 59, "name": "Meyer Evelkin", "age": 10, "utr": 0, "level": "Advanced"}, {"id": 61, "name": "Andrew Morginshtern", "age": 8, "utr": 0, "level": "Advanced"}, {"id": 62, "name": "Milana Morginshtern", "age": 12, "utr": 0, "level": "Advanced"}, {"id": 63, "name": "Ronald Sobolevskiy", "age": 15, "utr": 0, "level": "Advanced"}, {"id": 64, "name": "Jessica Rudnin", "age": 11, "utr": 0, "level": "Advanced"}, {"id": 65, "name": "Viola Borovskiy", "age": 11, "utr": 0, "level": "Advanced"}, {"id": 66, "name": "Abigail Krakhmal", "age": 8, "utr": 0, "level": "Advanced"}, {"id": 67, "name": "Julian Krakhmal", "age": 12, "utr": 0, "level": "Advanced"}, {"id": 68, "name": "Ramsey Ashmawy", "age": 9, "utr": 0, "level": "Advanced"}, {"id": 69, "name": "Tomas Orendain", "age": 10, "utr": 2.1, "level": "Advanced", "utrId": "4400447", "prevUtr": 0}, {"id": 70, "name": "Arina Vorotnikova", "age": 9, "utr": 0, "level": "Advanced"}, {"id": 71, "name": "James Moskalenko", "age": 9, "utr": 0, "level": "Advanced"}, {"id": 72, "name": "Yana Volfson", "age": 12, "utr": 0, "level": "Advanced"}, {"id": 84, "name": "Milana Markov", "age": 15, "utr": 6.14, "level": "Elite", "utrId": "2791744", "prevUtr": 0}, {"id": 85, "name": "Lea Kakhiani", "age": 15, "utr": 6.81, "level": "Elite", "utrId": "1347497", "prevUtr": 0}, {"id": 86, "name": "Allen Bendit", "age": 14, "utr": 5.69, "level": "Elite", "utrId": "5395226", "prevUtr": 0}, {"id": 87, "name": "Jaden Volovodovskiy", "age": 13, "utr": 3.29, "level": "Tournament", "utrId": "6104844", "prevUtr": 0}, {"id": 88, "name": "Ryan Novik", "age": 10, "utr": 4.88, "level": "Tournament", "utrId": "3325805", "prevUtr": 0}, {"id": 89, "name": "Nicholas Muhatasov", "age": 10, "utr": 3.22, "level": "Tournament", "utrId": "6020453", "prevUtr": 0}, {"id": 90, "name": "Daniel Komsky", "age": 12, "utr": 2.85, "level": "Tournament", "prevUtr": 0, "utrId": "5506615"}, {"id": 91, "name": "Lucas Komsky", "age": 10, "utr": 3.12, "level": "Tournament", "prevUtr": 0, "utrId": "5523460"}, {"id": 92, "name": "Nikole Felker", "age": 10, "utr": 2.7, "level": "Tournament", "prevUtr": 0, "utrId": "3533109"}];
+const DEFAULT_PLAYERS = [{"id": 1, "name": "Henry Holtz", "age": 14, "utr": 8.27, "utrd": 0, "level": "Elite", "utrId": "1658473", "prevUtr": 0}, {"id": 2, "name": "Tate Halladay", "age": 14, "utr": 8.13, "utrd": 0, "level": "Elite", "utrId": "2675164", "prevUtr": 0}, {"id": 3, "name": "Buvan Muthusamy", "age": 14, "utr": 8.11, "utrd": 0, "level": "Elite", "utrId": "1863880", "prevUtr": 0}, {"id": 4, "name": "Mustafo Boboev", "age": 14, "utr": 7.09, "utrd": 0, "level": "Elite", "utrId": "3800943", "prevUtr": 0}, {"id": 5, "name": "Jacob Shvartsman", "age": 14, "utr": 0, "utrd": 0, "level": "Elite"}, {"id": 6, "name": "Ari Jakubowitz", "age": 14, "utr": 5.67, "utrd": 0, "level": "Elite", "utrId": "1601095", "prevUtr": 0}, {"id": 7, "name": "Gabriella Uruchima", "age": 14, "utr": 2.42, "utrd": 0, "level": "Tournament", "utrId": "5440961", "prevUtr": 0}, {"id": 8, "name": "William Yukhimets", "age": 13, "utr": 3.88, "utrd": 0, "level": "Tournament", "utrId": "4123933", "prevUtr": 0}, {"id": 9, "name": "Katie Kubiak", "age": 11, "utr": 4.82, "utrd": 0, "level": "Tournament", "utrId": "3817458", "prevUtr": 0}, {"id": 10, "name": "Philip Sheyer", "age": 12, "utr": 0, "utrd": 0, "level": "Tournament"}, {"id": 11, "name": "Benjamin Belenkiy", "age": 13, "utr": 3.72, "utrd": 0, "level": "Tournament", "utrId": "3059575", "prevUtr": 0}, {"id": 12, "name": "Aiden Vaysbaum", "age": 15, "utr": 4.26, "utrd": 0, "level": "Tournament", "utrId": "5898089", "prevUtr": 0}, {"id": 13, "name": "Ben Sutton", "age": 16, "utr": 0, "utrd": 0, "level": "Tournament"}, {"id": 14, "name": "Gavin Khalaf", "age": 14, "utr": 3.83, "utrd": 0, "level": "Tournament", "utrId": "2718538", "prevUtr": 0}, {"id": 15, "name": "Asher Tsapovski", "age": 12, "utr": 5.61, "utrd": 0, "level": "Tournament", "utrId": "2279699", "prevUtr": 0}, {"id": 16, "name": "Jaime Orendain", "age": 12, "utr": 4.65, "utrd": 0, "level": "Tournament", "utrId": "3398352", "prevUtr": 0}, {"id": 17, "name": "Raphael Gurevich", "age": 14, "utr": 3.38, "utrd": 0, "level": "Tournament", "utrId": "5568934", "prevUtr": 0}, {"id": 18, "name": "Sebastian Sherbin", "age": 13, "utr": 2.89, "utrd": 0, "level": "Tournament", "utrId": "3858774", "prevUtr": 0}, {"id": 19, "name": "Marcus Aiken", "age": 14, "utr": 2.85, "utrd": 0, "level": "Tournament", "utrId": "3748159", "prevUtr": 0}, {"id": 20, "name": "Sophia Menchini", "age": 13, "utr": 2.62, "utrd": 0, "level": "Tournament", "utrId": "5902641", "prevUtr": 0}, {"id": 21, "name": "Ogden Dawson", "age": 14, "utr": 1.28, "utrd": 0, "level": "Tournament", "utrId": "5913978", "prevUtr": 0}, {"id": 22, "name": "Eva Kirillova", "age": 13, "utr": 1.89, "utrd": 0, "level": "Tournament", "utrId": "4000625", "prevUtr": 0}, {"id": 23, "name": "Noah Pertanava", "age": 13, "utr": 0, "utrd": 0, "level": "Tournament"}, {"id": 24, "name": "Maxim Carbajo", "age": 14, "utr": 3.77, "utrd": 0, "level": "Tournament", "utrId": "6055677", "prevUtr": 0}, {"id": 25, "name": "Theodore Pertenava", "age": 11, "utr": 1.46, "utrd": 0, "level": "Tournament", "utrId": "3305076", "prevUtr": 0}, {"id": 26, "name": "Daniel Lvovskiy", "age": 13, "utr": 2.34, "utrd": 0, "level": "Tournament", "utrId": "5991559", "prevUtr": 0}, {"id": 27, "name": "Alexander Lin", "age": 16, "utr": 2.61, "utrd": 0, "level": "Tournament", "utrId": "3949703", "prevUtr": 0}, {"id": 28, "name": "Elias Pollinger", "age": 15, "utr": 0, "utrd": 0, "level": "Tournament"}, {"id": 29, "name": "Adriel Simon", "age": 14, "utr": 2.13, "utrd": 0, "level": "Tournament", "utrId": "3326228", "prevUtr": 0}, {"id": 30, "name": "Lia Hovhannisyan", "age": 13, "utr": 2.91, "utrd": 0, "level": "Tournament", "utrId": "2717730", "prevUtr": 0}, {"id": 31, "name": "Ellie Kurosman", "age": 13, "utr": 3.58, "utrd": 0, "level": "Tournament", "utrId": "3738538", "prevUtr": 0}, {"id": 32, "name": "Maxine De Guzman", "age": 11, "utr": 2.97, "utrd": 0, "level": "Tournament", "utrId": "3722865", "prevUtr": 0}, {"id": 33, "name": "Gabriella Dolob", "age": 12, "utr": 1.71, "utrd": 0, "level": "Tournament", "utrId": "3693307", "prevUtr": 0}, {"id": 34, "name": "Lorenzo Warra", "age": 17, "utr": 0, "utrd": 0, "level": "Tournament"}, {"id": 35, "name": "Abigail Simon", "age": 14, "utr": 3.64, "utrd": 0, "level": "Tournament", "utrId": "2861273", "prevUtr": 0}, {"id": 36, "name": "Ami Vitkin", "age": 11, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 37, "name": "An Yu", "age": 10, "utr": 3.27, "utrd": 0, "level": "Advanced", "utrId": "3612646", "prevUtr": 0}, {"id": 38, "name": "Matt Huang", "age": 10, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 39, "name": "Joshua Nudelman", "age": 11, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 40, "name": "Sofimaie Hamhoev", "age": 11, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 41, "name": "Ethan Malek", "age": 12, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 42, "name": "Sofia Reznik", "age": 15, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 43, "name": "Olivia Toell", "age": 11, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 44, "name": "Jemma Zhang", "age": 8, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 45, "name": "Stefania Kupershmidt", "age": 10, "utr": 1.05, "utrd": 0, "level": "Advanced", "utrId": "5939220", "prevUtr": 0}, {"id": 46, "name": "Angelina Decrescenzo", "age": 13, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 47, "name": "Olivia Decrescenzo", "age": 13, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 48, "name": "Brandon Maldonado", "age": 9, "utr": 2.54, "utrd": 0, "level": "Advanced", "utrId": "4666340", "prevUtr": 0}, {"id": 49, "name": "Misha Morbi Husain", "age": 9, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 50, "name": "Maia Edelman", "age": 10, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 51, "name": "Vladimir Stavitskii", "age": 11, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 52, "name": "Anabelle Park", "age": 10, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 53, "name": "Gabriella Korotkiy", "age": 11, "utr": 2.25, "utrd": 0, "level": "Advanced", "utrId": "3693308", "prevUtr": 0}, {"id": 54, "name": "Allison Gorokhovsky", "age": 12, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 55, "name": "Riley Liang", "age": 13, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 56, "name": "Aiden Zheng", "age": 13, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 57, "name": "Alexandra Obolashvili", "age": 10, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 58, "name": "Millie Rodriguez", "age": 11, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 59, "name": "Meyer Evelkin", "age": 10, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 61, "name": "Andrew Morginshtern", "age": 8, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 62, "name": "Milana Morginshtern", "age": 12, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 63, "name": "Ronald Sobolevskiy", "age": 15, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 64, "name": "Jessica Rudnin", "age": 11, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 65, "name": "Viola Borovskiy", "age": 11, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 66, "name": "Abigail Krakhmal", "age": 8, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 67, "name": "Julian Krakhmal", "age": 12, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 68, "name": "Ramsey Ashmawy", "age": 9, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 69, "name": "Tomas Orendain", "age": 10, "utr": 2.1, "utrd": 0, "level": "Advanced", "utrId": "4400447", "prevUtr": 0}, {"id": 70, "name": "Arina Vorotnikova", "age": 9, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 71, "name": "James Moskalenko", "age": 9, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 72, "name": "Yana Volfson", "age": 12, "utr": 0, "utrd": 0, "level": "Advanced"}, {"id": 84, "name": "Milana Markov", "age": 15, "utr": 6.14, "utrd": 0, "level": "Elite", "utrId": "2791744", "prevUtr": 0}, {"id": 85, "name": "Lea Kakhiani", "age": 15, "utr": 6.81, "utrd": 0, "level": "Elite", "utrId": "1347497", "prevUtr": 0}, {"id": 86, "name": "Allen Bendit", "age": 14, "utr": 5.69, "utrd": 0, "level": "Elite", "utrId": "5395226", "prevUtr": 0}, {"id": 87, "name": "Jaden Volovodovskiy", "age": 13, "utr": 3.29, "utrd": 0, "level": "Tournament", "utrId": "6104844", "prevUtr": 0}, {"id": 88, "name": "Ryan Novik", "age": 10, "utr": 4.88, "utrd": 0, "level": "Tournament", "utrId": "3325805", "prevUtr": 0}, {"id": 89, "name": "Nicholas Muhatasov", "age": 10, "utr": 3.22, "utrd": 0, "level": "Tournament", "utrId": "6020453", "prevUtr": 0}, {"id": 90, "name": "Daniel Komsky", "age": 12, "utr": 2.85, "utrd": 0, "level": "Tournament", "prevUtr": 0, "utrId": "5506615"}, {"id": 91, "name": "Lucas Komsky", "age": 10, "utr": 3.12, "utrd": 0, "level": "Tournament", "prevUtr": 0, "utrId": "5523460"}, {"id": 92, "name": "Nikole Felker", "age": 10, "utr": 2.7, "utrd": 0, "level": "Tournament", "prevUtr": 0, "utrId": "3533109"}];
 
 function loadPlayers() {
   try {
     const s = localStorage.getItem('mp_editor');
-    if (s) { const p = JSON.parse(s); if (p && p.length > 0) return p; }
+    if (s) { const p = JSON.parse(s); if (p && p.length > 0) return p.map(x=>({utrd:0,...x})); }
   } catch(e) {}
   return JSON.parse(JSON.stringify(DEFAULT_PLAYERS));
 }
@@ -111,57 +126,30 @@ function savePlayers(p) { try { localStorage.setItem('mp_editor', JSON.stringify
 
 let players = loadPlayers();
 
-// Monthly base UTR logic
-// monthlyBase: { "YYYY-MM": { playerId: baseUtr, ... }, ... }
-function getMonthKey() {
-  const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
-}
-function loadMonthlyBase() {
-  try { return JSON.parse(localStorage.getItem('mp_monthly') || '{}'); } catch(e) { return {}; }
-}
+function getMonthKey() { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function loadMonthlyBase() { try { return JSON.parse(localStorage.getItem('mp_monthly')||'{}'); } catch(e) { return {}; } }
 function saveMonthlyBase(mb) { try { localStorage.setItem('mp_monthly', JSON.stringify(mb)); } catch(e) {} }
-
-// On load: ensure this month's base is recorded for all players with UTR
 function initMonthlyBase() {
-  const mk = getMonthKey();
-  let mb = loadMonthlyBase();
-  // Remove old months (keep only last 2)
-  const keys = Object.keys(mb).sort();
-  while (keys.length > 2) { delete mb[keys.shift()]; }
-  // If this month doesn't exist yet, seed it from current UTR values
-  if (!mb[mk]) {
-    mb[mk] = {};
-    players.forEach(p => { if (p.utr > 0) mb[mk][p.id] = p.utr; });
-    saveMonthlyBase(mb);
-  }
+  const mk=getMonthKey(); let mb=loadMonthlyBase();
+  const keys=Object.keys(mb).sort(); while(keys.length>2){delete mb[keys.shift()];}
+  if(!mb[mk]){ mb[mk]={}; players.forEach(p=>{if(p.utr>0)mb[mk][p.id]=p.utr;}); saveMonthlyBase(mb); }
   return mb;
 }
 
 function today() { return new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}); }
 function showToast(msg, color="#1A6B3A") {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.style.background = color;
-  t.style.display = 'block';
-  setTimeout(() => t.style.display='none', 2500);
-}
-
-function getChange(p) {
-  if (!p.prevUtr || p.prevUtr === 0 || p.utr === 0) return '';
-  const diff = (p.utr - p.prevUtr).toFixed(2);
-  if (diff > 0) return `<div class="utr-change up">▲ +${diff}</div>`;
-  if (diff < 0) return `<div class="utr-change down">▼ ${diff}</div>`;
-  return '';
+  const t=document.getElementById('toast'); t.textContent=msg; t.style.background=color;
+  t.style.display='block'; setTimeout(()=>t.style.display='none',2500);
 }
 
 function render() {
-  const sorted = [...players].sort((a,b) => b.utr - a.utr);
-  const rated  = players.filter(p=>p.utr>0);
-  const avg    = rated.length ? (rated.reduce((s,p)=>s+p.utr,0)/rated.length).toFixed(2) : "—";
-  const top    = rated.length ? Math.max(...rated.map(p=>p.utr)).toFixed(2) : "—";
-  const elite  = players.filter(p=>p.level==="Elite").length;
+  const sorted=[...players].sort((a,b)=>b.utr-a.utr);
+  const rated=players.filter(p=>p.utr>0);
+  const avg=rated.length?(rated.reduce((s,p)=>s+p.utr,0)/rated.length).toFixed(2):"—";
+  const top=rated.length?Math.max(...rated.map(p=>p.utr)).toFixed(2):"—";
+  const elite=players.filter(p=>p.level==="Elite").length;
 
-  let html = `
+  let html=`
   <div class="header">
     <div>
       <div class="header-eyebrow">MATCHPOINT TENNIS CLUB — BAY PARKWAY, BROOKLYN</div>
@@ -177,26 +165,45 @@ function render() {
     <div class="stat"><div class="stat-num">${elite}</div><div class="stat-label">Elite Group</div></div>
   </div>`;
 
-  let rank = 0;
-  LEVEL_ORDER.forEach(level => {
-    const group = sorted.filter(p=>p.level===level);
+  let rank=0;
+  LEVEL_ORDER.forEach(level=>{
+    const group=sorted.filter(p=>p.level===level);
     if(!group.length) return;
-    html += `<div class="section-header section-${level}">${level.toUpperCase()} GROUP — ${group.length} players</div>`;
-    group.forEach(p => {
+    html+=`<div class="section-header section-${level}">${level.toUpperCase()} GROUP — ${group.length} players</div>`;
+    group.forEach(p=>{
       rank++;
-      const isTop = rank <= 3;
-      const badge = isTop ? MEDALS[rank-1] : rank;
-      const pct   = p.utr > 0 ? Math.min((p.utr/10)*100,100).toFixed(1) : 0;
-      const utrHtml = p.utr > 0
-        ? `<div class="utr-cell"><div class="utr-value">${p.utr.toFixed(2)}</div>${getChange(p)}</div>`
-        : `<div class="utr-cell"><div class="utr-value zero">—</div></div>`;
-      html += `
+      const isTop=rank<=3;
+      const badge=isTop?MEDALS[rank-1]:rank;
+      const pctS=p.utr>0?Math.min((p.utr/10)*100,100).toFixed(1):0;
+      const pctD=p.utrd>0?Math.min((p.utrd/10)*100,100).toFixed(1):0;
+      let changeHtml='';
+      if(p.prevUtr&&p.prevUtr>0&&p.utr>0&&Math.abs(p.utr-p.prevUtr)>0.01){
+        const diff=(p.utr-p.prevUtr).toFixed(2);
+        changeHtml=diff>0?`<span class="utr-change up">▲+${diff}</span>`:`<span class="utr-change down">▼${diff}</span>`;
+      }
+      html+=`
       <div class="player-row ${isTop?'top3':''}">
         <div class="rank-badge ${isTop?'top':'normal'}">${badge}</div>
-        <div class="player-info"><div class="player-name">${p.utrId ? `<a href="https://app.utrsports.net/profiles/${p.utrId}" target="_blank" style="color:#1A1A1A;text-decoration:none;border-bottom:1px dotted #AAA;" title="Open UTR profile">${p.name} ↗</a>` : p.name}</div><div class="player-age">Age ${p.age}${p.utrId ? ' · ID: '+p.utrId : ' · no ID'}</div></div>
-        <div><span class="level-badge badge-${level}">${level}</span></div>
-        ${utrHtml}
-        <div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div></div>
+        <div class="player-info">
+          <div class="player-name">${p.utrId?`<a href="https://app.utrsports.net/profiles/${p.utrId}" target="_blank" style="color:#1A1A1A;text-decoration:none;border-bottom:1px dotted #AAA;">${p.name} ↗</a>`:p.name}</div>
+          <div class="player-age">Age ${p.age}${p.utrId?' · ID: '+p.utrId:' · no ID'}</div>
+          <div style="margin-top:3px"><span class="level-badge badge-${level}">${level}</span></div>
+        </div>
+        <div class="utr-dual">
+          <div class="utr-row">
+            <span class="utr-icon">👤</span>
+            <span class="utr-val ${p.utr>0?'':'zero'}">${p.utr>0?p.utr.toFixed(2):'—'}</span>
+            ${changeHtml}
+          </div>
+          <div class="utr-row">
+            <span class="utr-icon">👥</span>
+            <span class="utr-val ${p.utrd>0?'':'zero'}">${p.utrd>0?p.utrd.toFixed(2):'—'}</span>
+          </div>
+        </div>
+        <div class="bar-dual">
+          <div class="bar-row"><div class="bar-bg"><div class="bar-fill-s" style="width:${pctS}%"></div></div></div>
+          <div class="bar-row"><div class="bar-bg"><div class="bar-fill-d" style="width:${pctD}%"></div></div></div>
+        </div>
         <div class="action-btns">
           <button class="btn-edit" onclick="openEdit(${p.id})">Edit</button>
           <button class="btn-del"  onclick="delPlayer(${p.id})">✕</button>
@@ -205,112 +212,81 @@ function render() {
     });
   });
 
-  html += `
+  html+=`
   <div class="add-form">
     <label>ADD PLAYER</label>
     <div class="fields">
-      <input id="f-name" placeholder="Full Name" style="width:160px">
-      <input id="f-age"  placeholder="Age" type="number" style="width:55px">
-      <input id="f-utr"  placeholder="UTR" type="number" step="0.01" style="width:90px">
-      <select id="f-level" style="width:130px"><option>Elite</option><option>Tournament</option><option>Advanced</option></select>
+      <input id="f-name" placeholder="Full Name" style="width:150px">
+      <input id="f-age"  placeholder="Age" type="number" style="width:50px">
+      <input id="f-utr"  placeholder="👤 Singles" type="number" step="0.01" style="width:95px">
+      <input id="f-utrd" placeholder="👥 Doubles" type="number" step="0.01" style="width:95px">
+      <input id="f-utrid" placeholder="UTR ID" style="width:90px">
+      <select id="f-level" style="width:120px"><option>Elite</option><option>Tournament</option><option>Advanced</option></select>
       <button class="btn-add" onclick="addPlayer()">+ Add</button>
     </div>
   </div>
   <div class="footer">Matchpoint Tennis Club · Season 2026–2027</div>`;
 
-  document.getElementById('board').innerHTML = html;
+  document.getElementById('board').innerHTML=html;
 }
 
 function addPlayer() {
-  const name = document.getElementById('f-name').value.trim();
-  const age  = parseInt(document.getElementById('f-age').value) || 10;
-  const utr  = parseFloat(document.getElementById('f-utr').value) || 0;
-  const level= document.getElementById('f-level').value;
-  if (!name) { alert('Enter name'); return; }
-  const maxId = players.length ? Math.max(...players.map(p=>p.id)) : 0;
-  players.push({ id: maxId+1, name, age, utr, level, prevUtr: 0 });
-  savePlayers(players); render();
-  showToast('Added: ' + name);
+  const name=document.getElementById('f-name').value.trim();
+  const age=parseInt(document.getElementById('f-age').value)||10;
+  const utr=parseFloat(document.getElementById('f-utr').value)||0;
+  const utrd=parseFloat(document.getElementById('f-utrd').value)||0;
+  const utrId=document.getElementById('f-utrid').value.trim();
+  const level=document.getElementById('f-level').value;
+  if(!name){alert('Enter name');return;}
+  const maxId=players.length?Math.max(...players.map(p=>p.id)):0;
+  players.push({id:maxId+1,name,age,utr,utrd,level,utrId,prevUtr:0});
+  savePlayers(players); render(); showToast('Added: '+name);
 }
 
 function delPlayer(id) {
-  const p = players.find(x=>x.id===id);
-  if (!p || !confirm('Remove ' + p.name + '?')) return;
-  players = players.filter(x=>x.id!==id);
-  savePlayers(players); render();
-  showToast('Removed', '#E74C3C');
+  const p=players.find(x=>x.id===id);
+  if(!p||!confirm('Remove '+p.name+'?'))return;
+  players=players.filter(x=>x.id!==id);
+  savePlayers(players); render(); showToast('Removed','#E74C3C');
 }
 
 function openEdit(id) {
-  const p = players.find(x=>x.id===id);
-  if (!p) return;
-  document.getElementById('edit-id').value    = p.id;
-  document.getElementById('edit-name').value  = p.name;
-  document.getElementById('edit-age').value   = p.age;
-  document.getElementById('edit-utr').value   = p.utr || '';
-  document.getElementById('edit-utrid').value = p.utrId || '';
-  document.getElementById('edit-level').value = p.level;
+  const p=players.find(x=>x.id===id); if(!p)return;
+  document.getElementById('edit-id').value=p.id;
+  document.getElementById('edit-name').value=p.name;
+  document.getElementById('edit-age').value=p.age;
+  document.getElementById('edit-utr').value=p.utr||'';
+  document.getElementById('edit-utrd').value=p.utrd||'';
+  document.getElementById('edit-utrid').value=p.utrId||'';
+  document.getElementById('edit-level').value=p.level;
   document.getElementById('editModal').classList.add('open');
 }
-function closeModal() { document.getElementById('editModal').classList.remove('open'); }
+function closeModal(){document.getElementById('editModal').classList.remove('open');}
 function saveEdit() {
-  const id    = parseInt(document.getElementById('edit-id').value);
-  const name  = document.getElementById('edit-name').value.trim();
-  const age   = parseInt(document.getElementById('edit-age').value) || 10;
-  const newUtr= parseFloat(document.getElementById('edit-utr').value) || 0;
-  const utrId = document.getElementById('edit-utrid').value.trim();
-  const level = document.getElementById('edit-level').value;
-  if (!name) return;
-  players = players.map(p => {
-    if (p.id !== id) return p;
-    const prevUtr = (p.utr && p.utr !== newUtr) ? p.utr : (p.prevUtr || 0);
-    return {...p, name, age, utr: newUtr, utrId, level, prevUtr};
+  const id=parseInt(document.getElementById('edit-id').value);
+  const name=document.getElementById('edit-name').value.trim();
+  const age=parseInt(document.getElementById('edit-age').value)||10;
+  const newUtr=parseFloat(document.getElementById('edit-utr').value)||0;
+  const newUtrd=parseFloat(document.getElementById('edit-utrd').value)||0;
+  const utrId=document.getElementById('edit-utrid').value.trim();
+  const level=document.getElementById('edit-level').value;
+  if(!name)return;
+  players=players.map(p=>{
+    if(p.id!==id)return p;
+    const prevUtr=(p.utr&&p.utr!==newUtr)?p.utr:(p.prevUtr||0);
+    return{...p,name,age,utr:newUtr,utrd:newUtrd,utrId,level,prevUtr};
   });
-  savePlayers(players); closeModal(); render();
-  showToast('Saved!');
+  savePlayers(players); closeModal(); render(); showToast('Saved!');
 }
-document.addEventListener('click', e => { if(e.target.id==='editModal') closeModal(); });
+document.addEventListener('click',e=>{if(e.target.id==='editModal')closeModal();});
 
 function publish() {
   savePlayers(players);
-
-  // --- Monthly base management ---
-  const mk = getMonthKey();
-  let mb = loadMonthlyBase();
-  // If new month, seed base from current UTR
-  if (!mb[mk]) {
-    mb[mk] = {};
-    players.forEach(p => { if (p.utr > 0) mb[mk][p.id] = p.utr; });
-    saveMonthlyBase(mb);
-  }
-  // Compute monthly gains for each player
-  const monthBase = mb[mk] || {};
-  // monthName for display
-  const monthName = new Date().toLocaleDateString("en-US",{month:"long",year:"numeric"});
-
-  // Build gainers list: only players who have gained > 0.01 this month
-  const gainers = players
-    .filter(p => p.utr > 0 && monthBase[p.id] > 0 && (p.utr - monthBase[p.id]) > 0.01)
-    .map(p => ({...p, gain: parseFloat((p.utr - monthBase[p.id]).toFixed(2))}))
-    .sort((a,b) => b.gain - a.gain)
-    .slice(0, 3);
-
-  // Embed monthly data in player JSON so index.html can render it
-  const playersWithMonthly = players.map(p => ({
-    ...p,
-    monthBase: monthBase[p.id] || 0,
-    monthKey: mk
-  }));
-  const playerData = JSON.stringify(playersWithMonthly);
-
-  const sorted=[...players].sort((a,b)=>b.utr-a.utr);
-  const rated=players.filter(p=>p.utr>0);
-  const avg=rated.length?(rated.reduce((s,p)=>s+p.utr,0)/rated.length).toFixed(2):"—";
-  const top=rated.length?Math.max(...rated.map(p=>p.utr)).toFixed(2):"—";
-  const elite=players.filter(p=>p.level==="Elite").length;
-
-  // Build top-of-month HTML block (static, for preview in generated file)
-  // This is now handled dynamically in index.html via JS
+  const mk=getMonthKey(); let mb=loadMonthlyBase();
+  if(!mb[mk]){mb[mk]={};players.forEach(p=>{if(p.utr>0)mb[mk][p.id]=p.utr;});saveMonthlyBase(mb);}
+  const monthBase=mb[mk]||{};
+  const playersWithMonthly=players.map(p=>({...p,monthBase:monthBase[p.id]||0,monthKey:mk}));
+  const playerData=JSON.stringify(playersWithMonthly);
 
   const publicHtml=`<!DOCTYPE html>
 <html lang="en">
@@ -323,60 +299,83 @@ function publish() {
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-85D8K0EYBM');<\/script>
 <script id="player-data" type="application/json">${playerData}<\/script>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F4F8;}
-  .board{max-width:960px;margin:16px auto;background:white;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.10);}
-  .header{background:linear-gradient(135deg,#1F4E79 0%,#2E75B6 100%);padding:24px 28px 20px;color:white;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
-  .header-eyebrow{font-size:10px;letter-spacing:2px;opacity:.65;margin-bottom:5px;}
-  .header-title{font-size:26px;font-weight:800;}
-  .header-sub{font-size:12px;opacity:.75;margin-top:4px;}
-  .header-date{background:rgba(255,255,255,.15);border-radius:8px;padding:8px 14px;font-size:11px;text-align:right;flex-shrink:0;}
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);background:#F7FAFF;border-bottom:1px solid #E4EAF0;}
-  .stat{padding:14px 16px;text-align:center;border-right:1px solid #E4EAF0;}
-  .stat:last-child{border-right:none;}
-  .stat-num{font-size:22px;font-weight:800;color:#1F4E79;}
-  .stat-label{font-size:10px;color:#999;margin-top:2px;}
-  .top-month{padding:16px 20px;background:linear-gradient(135deg,#FFF8E7 0%,#FDEBD0 100%);border-bottom:2px solid #F39C12;}
-  .top-month-title{font-size:12px;font-weight:800;color:#7B3F00;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
-  .top-month-cards{display:flex;gap:10px;flex-wrap:wrap;}
-  .top-month-card{background:white;border-radius:10px;padding:10px 14px;flex:1;min-width:120px;box-shadow:0 2px 8px rgba(0,0,0,.08);display:flex;align-items:center;gap:10px;}
-  .tm-medal{font-size:22px;flex-shrink:0;}
-  .tm-info{min-width:0;}
-  .tm-name{font-size:13px;font-weight:700;color:#1A1A1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .tm-gain{font-size:15px;font-weight:800;color:#1A6B3A;margin-top:2px;}
-  .tm-gain-label{font-size:10px;color:#999;}
-  .section-header{padding:8px 20px;font-size:11px;font-weight:700;letter-spacing:.5px;border-left:4px solid;}
-  .section-Elite{background:#D6E4F0;color:#1F4E79;border-color:#1F4E79;}
-  .section-Tournament{background:#D4EDDA;color:#1A6B3A;border-color:#1A6B3A;}
-  .section-Advanced{background:#FDEBD0;color:#7B3F00;border-color:#E67E22;}
-  .player-row{display:grid;grid-template-columns:44px 1fr 110px 100px 1fr;gap:12px;align-items:center;padding:11px 20px;border-bottom:1px solid #F5F5F5;}
-  .player-row.top3{background:#F7FAFF;}
-  .badge-col{display:block;}
-  .rank-badge{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
-  .rank-badge.top{background:#1F4E79;color:white;font-size:16px;}
-  .rank-badge.normal{background:#EBEBEB;color:#666;}
-  .player-info{min-width:0;}
-  .player-name{font-weight:600;font-size:14px;color:#1A1A1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .player-age{font-size:11px;color:#AAA;margin-top:1px;}
-  .level-badge{display:inline-block;padding:3px 9px;border-radius:20px;font-weight:600;font-size:10px;white-space:nowrap;}
-  .badge-Elite{background:#D6E4F0;color:#1F4E79;}
-  .badge-Tournament{background:#D4EDDA;color:#1A6B3A;}
-  .badge-Advanced{background:#FDEBD0;color:#7B3F00;}
-  .utr-cell{text-align:center;}
-  .utr-value{font-size:20px;font-weight:800;color:#1F4E79;}
-  .utr-value.zero{font-size:13px;color:#CCC;}
-  .utr-change{font-size:11px;font-weight:700;margin-top:2px;}
-  .utr-change.up{color:#1A6B3A;}
-  .utr-change.down{color:#E74C3C;}
-  .bar-wrap{display:flex;align-items:center;gap:8px;min-width:0;}
-  .bar-bg{flex:1;height:7px;background:#E8E8E8;border-radius:4px;overflow:hidden;}
-  .bar-fill{height:100%;background:linear-gradient(90deg,#2E75B6,#1F4E79);border-radius:4px;}
-  .footer{padding:10px 20px;font-size:10px;color:#BBB;border-top:1px solid #F0F0F0;text-align:center;}
-  .print-btn{position:fixed;bottom:20px;right:20px;background:#1F4E79;color:white;border:none;border-radius:8px;padding:11px 18px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2);z-index:999;}
-  .share-btn{position:fixed;bottom:20px;left:20px;background:#25D366;color:white;border:none;border-radius:8px;padding:11px 18px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2);z-index:999;}
-  .copied-toast{position:fixed;bottom:70px;left:20px;background:#333;color:white;padding:8px 14px;border-radius:6px;font-size:12px;display:none;z-index:999;}
-  @media(max-width:520px){.board{margin:8px;border-radius:8px;}.header{padding:14px;}.header-title{font-size:18px;}.header-date{display:none;}.stat{padding:10px 4px;}.stat-num{font-size:17px;}.stat-label{font-size:8px;}.section-header{padding:6px 12px;font-size:10px;}.player-row{grid-template-columns:32px 1fr 80px 80px;gap:8px;padding:9px 12px;}.badge-col{display:none;}.rank-badge{width:28px;height:28px;font-size:11px;}.rank-badge.top{font-size:13px;}.player-name{font-size:12px;}.player-age{font-size:9px;}.utr-value{font-size:16px;}.print-btn,.share-btn{padding:9px 14px;font-size:12px;}.top-month-card{min-width:90px;padding:8px 10px;}.tm-name{font-size:11px;}.tm-gain{font-size:13px;}.tm-medal{font-size:18px;}}
-  @media print{.print-btn,.share-btn{display:none;}body{background:white;}.board{box-shadow:none;margin:0;border-radius:0;max-width:100%;}}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F4F8;}
+.board{max-width:960px;margin:16px auto;background:white;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.10);}
+.header{background:linear-gradient(135deg,#1F4E79 0%,#2E75B6 100%);padding:24px 28px 20px;color:white;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+.header-eyebrow{font-size:10px;letter-spacing:2px;opacity:.65;margin-bottom:5px;}
+.header-title{font-size:26px;font-weight:800;}
+.header-sub{font-size:12px;opacity:.75;margin-top:4px;}
+.header-date{background:rgba(255,255,255,.15);border-radius:8px;padding:8px 14px;font-size:11px;text-align:right;flex-shrink:0;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);background:#F7FAFF;border-bottom:1px solid #E4EAF0;}
+.stat{padding:14px 16px;text-align:center;border-right:1px solid #E4EAF0;}
+.stat:last-child{border-right:none;}
+.stat-num{font-size:22px;font-weight:800;color:#1F4E79;}
+.stat-label{font-size:10px;color:#999;margin-top:2px;}
+/* Sort toggle */
+.sort-bar{display:flex;align-items:center;gap:10px;padding:10px 20px;background:#F7FAFF;border-bottom:1px solid #E4EAF0;}
+.sort-label{font-size:11px;color:#999;font-weight:600;}
+.sort-btn{padding:6px 16px;border-radius:20px;border:2px solid #DDD;background:white;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;}
+.sort-btn.active-s{border-color:#1F4E79;background:#1F4E79;color:white;}
+.sort-btn.active-d{border-color:#1F4E79;background:#1F4E79;color:white;}
+/* Top of month */
+.top-month{padding:16px 20px;background:linear-gradient(135deg,#FFF8E7 0%,#FDEBD0 100%);border-bottom:2px solid #F39C12;}
+.top-month-title{font-size:12px;font-weight:800;color:#7B3F00;letter-spacing:1px;margin-bottom:10px;}
+.top-month-cards{display:flex;gap:10px;flex-wrap:wrap;}
+.top-month-card{background:white;border-radius:10px;padding:10px 14px;flex:1;min-width:120px;box-shadow:0 2px 8px rgba(0,0,0,.08);display:flex;align-items:center;gap:10px;}
+.tm-medal{font-size:22px;flex-shrink:0;}
+.tm-name{font-size:13px;font-weight:700;color:#1A1A1A;}
+.tm-gain{font-size:15px;font-weight:800;color:#1A6B3A;}
+.tm-gain-label{font-size:10px;color:#999;}
+/* Section & player rows */
+.section-header{padding:8px 20px;font-size:11px;font-weight:700;letter-spacing:.5px;border-left:4px solid;}
+.section-Elite{background:#D6E4F0;color:#1F4E79;border-color:#1F4E79;}
+.section-Tournament{background:#D4EDDA;color:#1A6B3A;border-color:#1A6B3A;}
+.section-Advanced{background:#FDEBD0;color:#7B3F00;border-color:#E67E22;}
+.player-row{display:grid;grid-template-columns:44px 1fr 110px 120px 1fr;gap:12px;align-items:center;padding:10px 20px;border-bottom:1px solid #F5F5F5;}
+.player-row.top3{background:#F7FAFF;}
+.rank-badge{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
+.rank-badge.top{background:#1F4E79;color:white;font-size:16px;}
+.rank-badge.normal{background:#EBEBEB;color:#666;}
+.player-info{min-width:0;}
+.player-name{font-weight:600;font-size:14px;color:#1A1A1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.player-age{font-size:11px;color:#AAA;margin-top:1px;}
+.level-badge{display:inline-block;padding:3px 9px;border-radius:20px;font-weight:600;font-size:10px;}
+.badge-Elite{background:#D6E4F0;color:#1F4E79;}
+.badge-Tournament{background:#D4EDDA;color:#1A6B3A;}
+.badge-Advanced{background:#FDEBD0;color:#7B3F00;}
+/* Dual UTR display */
+.utr-dual{display:flex;flex-direction:column;gap:4px;}
+.utr-row{display:flex;align-items:center;gap:5px;}
+.utr-icon{font-size:12px;width:16px;text-align:center;flex-shrink:0;}
+.utr-val{font-size:18px;font-weight:800;color:#1F4E79;}
+.utr-val.zero{font-size:12px;color:#CCC;font-weight:400;}
+.utr-val-d{font-size:18px;font-weight:800;color:#1F4E79;}
+.utr-val-d.zero{font-size:12px;color:#CCC;font-weight:400;}
+.utr-change{font-size:10px;font-weight:700;}
+.utr-change.up{color:#1A6B3A;}
+.utr-change.down{color:#E74C3C;}
+/* Dual bars */
+.bar-dual{display:flex;flex-direction:column;gap:5px;min-width:0;}
+.bar-bg{flex:1;height:6px;background:#E8E8E8;border-radius:3px;overflow:hidden;}
+.bar-fill-s{height:100%;background:linear-gradient(90deg,#2E75B6,#1F4E79);border-radius:3px;}
+.bar-fill-d{height:100%;background:linear-gradient(90deg,#2E75B6,#1F4E79);border-radius:3px;}
+.footer{padding:10px 20px;font-size:10px;color:#BBB;border-top:1px solid #F0F0F0;text-align:center;}
+.print-btn{position:fixed;bottom:20px;right:20px;background:#1F4E79;color:white;border:none;border-radius:8px;padding:11px 18px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2);z-index:999;}
+.share-btn{position:fixed;bottom:20px;left:20px;background:#25D366;color:white;border:none;border-radius:8px;padding:11px 18px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2);z-index:999;}
+.copied-toast{position:fixed;bottom:70px;left:20px;background:#333;color:white;padding:8px 14px;border-radius:6px;font-size:12px;display:none;z-index:999;}
+@media(max-width:520px){
+  .board{margin:8px;border-radius:8px;}.header{padding:14px;}.header-title{font-size:18px;}.header-date{display:none;}
+  .stat{padding:10px 4px;}.stat-num{font-size:17px;}.stat-label{font-size:8px;}
+  .player-row{grid-template-columns:32px 1fr 90px 1fr;gap:6px;padding:8px 10px;}
+  .player-row .level-col{display:none;}
+  .rank-badge{width:28px;height:28px;font-size:11px;}.rank-badge.top{font-size:13px;}
+  .player-name{font-size:12px;}.player-age{font-size:9px;}
+  .utr-val,.utr-val-d{font-size:14px;}
+  .print-btn,.share-btn{padding:9px 14px;font-size:12px;}
+  .top-month-card{min-width:90px;padding:8px 10px;}.tm-name{font-size:11px;}.tm-gain{font-size:13px;}
+}
+@media print{.print-btn,.share-btn{display:none;}body{background:white;}.board{box-shadow:none;margin:0;border-radius:0;max-width:100%;}}
 </style>
 </head>
 <body>
@@ -387,38 +386,54 @@ function publish() {
 <script>
 const MEDALS=["🥇","🥈","🥉"];
 const LEVEL_ORDER=["Elite","Tournament","Advanced"];
+let sortMode='singles'; // 'singles' or 'doubles'
 
 function getMonthKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
 function getMonthName(){return new Date().toLocaleDateString("en-US",{month:"long",year:"numeric"});}
 
+function setSortMode(mode){
+  sortMode=mode;
+  document.getElementById('btn-s').className='sort-btn'+(mode==='singles'?' active-s':'');
+  document.getElementById('btn-d').className='sort-btn'+(mode==='doubles'?' active-d':'');
+  renderTable(window._players);
+}
+
 function render(players){
+  window._players=players;
   const currentMk=getMonthKey();
-  const sorted=[...players].sort((a,b)=>b.utr-a.utr);
   const rated=players.filter(p=>p.utr>0);
+  const ratedD=players.filter(p=>p.utrd>0);
   const avg=rated.length?(rated.reduce((s,p)=>s+p.utr,0)/rated.length).toFixed(2):"—";
   const top=rated.length?Math.max(...rated.map(p=>p.utr)).toFixed(2):"—";
   const elite=players.filter(p=>p.level==="Elite").length;
 
-  let html=\`<div class="header"><div><div class="header-eyebrow">MATCHPOINT TENNIS CLUB — BAY PARKWAY, BROOKLYN</div><div class="header-title">Junior Player Rankings</div><div class="header-sub">Universal Tennis Rating (UTR) · Season 2026–2027</div></div><div class="header-date">Updated:<br>\${new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}</div></div><div class="stats"><div class="stat"><div class="stat-num">\${players.length}</div><div class="stat-label">Total Players</div></div><div class="stat"><div class="stat-num">\${avg}</div><div class="stat-label">Avg UTR</div></div><div class="stat"><div class="stat-num">\${top}</div><div class="stat-label">Highest UTR</div></div><div class="stat"><div class="stat-num">\${elite}</div><div class="stat-label">Elite Group</div></div></div>\`;
+  let html=\`<div class="header"><div><div class="header-eyebrow">MATCHPOINT TENNIS CLUB — BAY PARKWAY, BROOKLYN</div><div class="header-title">Junior Player Rankings</div><div class="header-sub">Universal Tennis Rating (UTR) · Season 2026–2027</div></div><div class="header-date">Updated:<br>\${new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}</div></div>\`;
+  html+=\`<div class="stats"><div class="stat"><div class="stat-num">\${players.length}</div><div class="stat-label">Total Players</div></div><div class="stat"><div class="stat-num">\${avg}</div><div class="stat-label">Avg Singles</div></div><div class="stat"><div class="stat-num">\${top}</div><div class="stat-label">Highest UTR</div></div><div class="stat"><div class="stat-num">\${elite}</div><div class="stat-label">Elite Group</div></div></div>\`;
+  html+=\`<div class="sort-bar"><span class="sort-label">Sort by:</span><button id="btn-s" class="sort-btn active-s" onclick="setSortMode('singles')"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg> Singles</button><button id="btn-d" class="sort-btn" onclick="setSortMode('doubles')"><svg width="16" height="14" viewBox="0 0 32 24" fill="currentColor"><path d="M8 12c2.2 0 4-1.8 4-4S10.2 4 8 4 4 5.8 4 8s1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4zm16-2c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/></svg> Doubles</button></div>\`;
 
-  // Top of Month block
-  // Only show gainers whose monthKey matches current month
-  const gainers=players
-    .filter(p=>p.utr>0&&p.monthBase>0&&p.monthKey===currentMk&&(p.utr-p.monthBase)>0.01)
+  // Top of month gainers
+  const gainers=players.filter(p=>p.utr>0&&p.monthBase>0&&p.monthKey===currentMk&&(p.utr-p.monthBase)>0.01)
     .map(p=>({...p,gain:parseFloat((p.utr-p.monthBase).toFixed(2))}))
-    .sort((a,b)=>b.gain-a.gain)
-    .slice(0,3);
-
+    .sort((a,b)=>b.gain-a.gain).slice(0,3);
   if(gainers.length>0){
-    const mn=getMonthName();
-    html+=\`<div class="top-month"><div class="top-month-title">🏆 TOP GAINERS — \${mn}</div><div class="top-month-cards">\`;
-    gainers.forEach((p,i)=>{
-      html+=\`<div class="top-month-card"><div class="tm-medal">\${MEDALS[i]}</div><div class="tm-info"><div class="tm-name">\${p.name}</div><div class="tm-gain">+\${p.gain.toFixed(2)}</div><div class="tm-gain-label">UTR this month</div></div></div>\`;
-    });
+    html+=\`<div class="top-month"><div class="top-month-title">🏆 TOP GAINERS — \${getMonthName()}</div><div class="top-month-cards">\`;
+    gainers.forEach((p,i)=>{html+=\`<div class="top-month-card"><div class="tm-medal">\${MEDALS[i]}</div><div><div class="tm-name">\${p.name}</div><div class="tm-gain">+\${p.gain.toFixed(2)}</div><div class="tm-gain-label">Singles UTR this month</div></div></div>\`;});
     html+=\`</div></div>\`;
   }
 
-  let rank=0;
+  html+=\`<div id="table-body"></div><div class="footer">Matchpoint Tennis Club · Season 2026–2027</div>\`;
+  document.getElementById('board').innerHTML=html;
+  renderTable(players);
+}
+
+function renderTable(players){
+  const mode=sortMode;
+  const sorted=[...players].sort((a,b)=>{
+    const av=mode==='singles'?a.utr:a.utrd;
+    const bv=mode==='singles'?b.utr:b.utrd;
+    return bv-av;
+  });
+  let html=''; let rank=0;
   LEVEL_ORDER.forEach(level=>{
     const group=sorted.filter(p=>p.level===level);
     if(!group.length)return;
@@ -427,19 +442,31 @@ function render(players){
       rank++;
       const isTop=rank<=3;
       const badge=isTop?MEDALS[rank-1]:rank;
-      const pct=p.utr>0?Math.min((p.utr/10)*100,100).toFixed(1):0;
+      const pctS=p.utr>0?Math.min((p.utr/10)*100,100).toFixed(1):0;
+      const pctD=p.utrd>0?Math.min((p.utrd/10)*100,100).toFixed(1):0;
       let utrChange='';
       if(p.prevUtr&&p.prevUtr>0&&p.utr>0&&Math.abs(p.utr-p.prevUtr)>0.01){
         const diff=(p.utr-p.prevUtr).toFixed(2);
-        utrChange=diff>0?\`<div class="utr-change up">▲ +\${diff}</div>\`:\`<div class="utr-change down">▼ \${diff}</div>\`;
+        utrChange=diff>0?\`<span class="utr-change up">▲+\${diff}</span>\`:\`<span class="utr-change down">▼\${diff}</span>\`;
       }
-      const utrHtml=p.utr>0?\`<div class="utr-cell"><div class="utr-value">\${p.utr.toFixed(2)}</div>\${utrChange}</div>\`:\`<div class="utr-cell"><div class="utr-value zero">—</div></div>\`;
-      html+=\`<div class="player-row \${isTop?'top3':''}"><div class="rank-badge \${isTop?'top':'normal'}">\${badge}</div><div class="player-info"><div class="player-name">\${p.name}</div><div class="player-age">Age \${p.age}</div></div><div class="badge-col"><span class="level-badge badge-\${level}">\${level}</span></div>\${utrHtml}<div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:\${pct}%"></div></div></div></div>\`;
+      html+=\`<div class="player-row \${isTop?'top3':''}">
+        <div class="rank-badge \${isTop?'top':'normal'}">\${badge}</div>
+        <div class="player-info"><div class="player-name">\${p.name}</div><div class="player-age">Age \${p.age}</div><div style="margin-top:3px"><span class="level-badge badge-\${level}">\${level}</span></div></div>
+        <div></div>
+        <div class="utr-dual">
+          <div class="utr-row"><span class="utr-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="#1F4E79"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg></span><span class="utr-val \${p.utr>0?'':'zero'}">\${p.utr>0?p.utr.toFixed(2):'—'}</span>\${utrChange}</div>
+          <div class="utr-row"><span class="utr-icon"><svg width="16" height="13" viewBox="0 0 32 24" fill="#1F4E79"><path d="M8 12c2.2 0 4-1.8 4-4S10.2 4 8 4 4 5.8 4 8s1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4zm16-2c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/></svg></span><span class="utr-val-d \${p.utrd>0?'':'zero'}">\${p.utrd>0?p.utrd.toFixed(2):'—'}</span></div>
+        </div>
+        <div class="bar-dual">
+          <div class="bar-bg"><div class="bar-fill-s" style="width:\${pctS}%"></div></div>
+          <div class="bar-bg"><div class="bar-fill-d" style="width:\${pctD}%"></div></div>
+        </div>
+      </div>\`;
     });
   });
-  html+=\`<div class="footer">Matchpoint Tennis Club · Season 2026–2027</div>\`;
-  document.getElementById('board').innerHTML=html;
+  document.getElementById('table-body').innerHTML=html;
 }
+
 const data=JSON.parse(document.getElementById('player-data').textContent);
 render(data);
 function shareLink(){const url='https://matchpoint-rankings-production.up.railway.app';if(navigator.share){navigator.share({title:'Matchpoint Junior Rankings',url:url});}else{navigator.clipboard.writeText(url).then(()=>{const t=document.getElementById('copiedToast');t.style.display='block';setTimeout(()=>t.style.display='none',2000);});}}
