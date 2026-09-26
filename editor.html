@@ -332,7 +332,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F4F8;}
 .section-Elite{background:#D6E4F0;color:#1F4E79;border-color:#1F4E79;}
 .section-Tournament{background:#D4EDDA;color:#1A6B3A;border-color:#1A6B3A;}
 .section-Advanced{background:#FDEBD0;color:#7B3F00;border-color:#E67E22;}
-.player-row{display:grid;grid-template-columns:44px 1fr 80px 120px 1fr;gap:10px;align-items:center;padding:10px 20px;border-bottom:1px solid #F5F5F5;}
+.player-row{display:grid;grid-template-columns:44px 1fr 80px 120px 1fr;gap:6px 10px;align-items:center;padding:10px 20px;border-bottom:1px solid #F5F5F5;}
 .player-row.top3{background:#F7FAFF;}
 .rank-badge{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
 .rank-badge.top{background:#1F4E79;color:white;font-size:16px;}
@@ -340,7 +340,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F4F8;}
 .player-info{min-width:0;}
 .player-name{font-weight:600;font-size:14px;color:#1A1A1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .player-age{font-size:11px;color:#AAA;margin-top:1px;}
-.level-col{display:flex;align-items:center;}
+.level-col{display:flex;align-items:center;padding-left:4px;}
 .level-badge{display:inline-block;padding:3px 8px;border-radius:20px;font-weight:600;font-size:10px;white-space:nowrap;}
 .badge-Elite{background:#D6E4F0;color:#1F4E79;}
 .badge-Tournament{background:#D4EDDA;color:#1A6B3A;}
@@ -368,12 +368,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F4F8;}
 @media(max-width:520px){
   .board{margin:8px;border-radius:8px;}.header{padding:14px;}.header-title{font-size:18px;}.header-date{display:none;}
   .stat{padding:10px 4px;}.stat-num{font-size:17px;}.stat-label{font-size:8px;}
-  .player-row{grid-template-columns:30px 1fr 62px 90px 1fr;gap:5px;padding:8px 8px;}
-  .player-row .level-col{display:flex;align-items:center;}
-  .level-badge{font-size:9px;padding:2px 6px;}
-  .rank-badge{width:28px;height:28px;font-size:11px;}.rank-badge.top{font-size:13px;}
+  .player-row{grid-template-columns:28px 1fr 56px 80px 44px;gap:4px;padding:7px 8px;}
+  .player-row .level-col{display:flex;align-items:center;padding-left:0;}
+  .level-badge{font-size:9px;padding:2px 5px;}
+  .rank-badge{width:26px;height:26px;font-size:10px;}.rank-badge.top{font-size:12px;}
   .player-name{font-size:12px;}.player-age{font-size:9px;}
-  .utr-val,.utr-val-d{font-size:14px;}
+  .utr-val,.utr-val-d{font-size:13px;}
+  .bar-dual{gap:3px;}.bar-bg{height:4px;}
   .print-btn,.share-btn{padding:9px 14px;font-size:12px;}
   .top-month-card{min-width:90px;padding:8px 10px;}.tm-name{font-size:11px;}.tm-gain{font-size:13px;}
 }
