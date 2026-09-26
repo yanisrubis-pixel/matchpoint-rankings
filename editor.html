@@ -111,6 +111,33 @@ function savePlayers(p) { try { localStorage.setItem('mp_editor', JSON.stringify
 
 let players = loadPlayers();
 
+// Monthly base UTR logic
+// monthlyBase: { "YYYY-MM": { playerId: baseUtr, ... }, ... }
+function getMonthKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+function loadMonthlyBase() {
+  try { return JSON.parse(localStorage.getItem('mp_monthly') || '{}'); } catch(e) { return {}; }
+}
+function saveMonthlyBase(mb) { try { localStorage.setItem('mp_monthly', JSON.stringify(mb)); } catch(e) {} }
+
+// On load: ensure this month's base is recorded for all players with UTR
+function initMonthlyBase() {
+  const mk = getMonthKey();
+  let mb = loadMonthlyBase();
+  // Remove old months (keep only last 2)
+  const keys = Object.keys(mb).sort();
+  while (keys.length > 2) { delete mb[keys.shift()]; }
+  // If this month doesn't exist yet, seed it from current UTR values
+  if (!mb[mk]) {
+    mb[mk] = {};
+    players.forEach(p => { if (p.utr > 0) mb[mk][p.id] = p.utr; });
+    saveMonthlyBase(mb);
+  }
+  return mb;
+}
+
 function today() { return new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}); }
 function showToast(msg, color="#1A6B3A") {
   const t = document.getElementById('toast');
@@ -246,33 +273,44 @@ document.addEventListener('click', e => { if(e.target.id==='editModal') closeMod
 
 function publish() {
   savePlayers(players);
+
+  // --- Monthly base management ---
+  const mk = getMonthKey();
+  let mb = loadMonthlyBase();
+  // If new month, seed base from current UTR
+  if (!mb[mk]) {
+    mb[mk] = {};
+    players.forEach(p => { if (p.utr > 0) mb[mk][p.id] = p.utr; });
+    saveMonthlyBase(mb);
+  }
+  // Compute monthly gains for each player
+  const monthBase = mb[mk] || {};
+  // monthName for display
+  const monthName = new Date().toLocaleDateString("en-US",{month:"long",year:"numeric"});
+
+  // Build gainers list: only players who have gained > 0.01 this month
+  const gainers = players
+    .filter(p => p.utr > 0 && monthBase[p.id] > 0 && (p.utr - monthBase[p.id]) > 0.01)
+    .map(p => ({...p, gain: parseFloat((p.utr - monthBase[p.id]).toFixed(2))}))
+    .sort((a,b) => b.gain - a.gain)
+    .slice(0, 3);
+
+  // Embed monthly data in player JSON so index.html can render it
+  const playersWithMonthly = players.map(p => ({
+    ...p,
+    monthBase: monthBase[p.id] || 0,
+    monthKey: mk
+  }));
+  const playerData = JSON.stringify(playersWithMonthly);
+
   const sorted=[...players].sort((a,b)=>b.utr-a.utr);
   const rated=players.filter(p=>p.utr>0);
   const avg=rated.length?(rated.reduce((s,p)=>s+p.utr,0)/rated.length).toFixed(2):"—";
   const top=rated.length?Math.max(...rated.map(p=>p.utr)).toFixed(2):"—";
   const elite=players.filter(p=>p.level==="Elite").length;
-  const playerData=JSON.stringify(players);
 
-  let tableHtml='';
-  let rank=0;
-  ["Elite","Tournament","Advanced"].forEach(level=>{
-    const group=sorted.filter(p=>p.level===level);
-    if(!group.length)return;
-    tableHtml+=`<div class="section-header section-${level}">${level.toUpperCase()} GROUP — ${group.length} players</div>`;
-    group.forEach(p=>{
-      rank++;
-      const isTop=rank<=3;
-      const badge=isTop?["🥇","🥈","🥉"][rank-1]:rank;
-      const pct=p.utr>0?Math.min((p.utr/10)*100,100).toFixed(1):0;
-      let utrChange='';
-      if(p.prevUtr&&p.prevUtr>0&&p.utr>0&&Math.abs(p.utr-p.prevUtr)>0.01){
-        const diff=(p.utr-p.prevUtr).toFixed(2);
-        utrChange=diff>0?`<div class="utr-change up">▲ +${diff}</div>`:`<div class="utr-change down">▼ ${diff}</div>`;
-      }
-      const utrHtml=p.utr>0?`<div class="utr-cell"><div class="utr-value">${p.utr.toFixed(2)}</div>${utrChange}</div>`:`<div class="utr-cell"><div class="utr-value zero">—</div></div>`;
-      tableHtml+=`<div class="player-row ${isTop?'top3':''}"><div class="rank-badge ${isTop?'top':'normal'}">${badge}</div><div class="player-info"><div class="player-name">${p.utrId?`<a href="https://app.utrsports.net/profiles/${p.utrId}" target="_blank" style="color:#1A1A1A;text-decoration:none;border-bottom:1px dotted #AAA;">${p.name} ↗</a>`:p.name}</div><div class="player-age">Age ${p.age}</div></div><div class="badge-col"><span class="level-badge badge-${level}">${level}</span></div>${utrHtml}<div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div></div></div>`;
-    });
-  });
+  // Build top-of-month HTML block (static, for preview in generated file)
+  // This is now handled dynamically in index.html via JS
 
   const publicHtml=`<!DOCTYPE html>
 <html lang="en">
@@ -298,6 +336,15 @@ function publish() {
   .stat:last-child{border-right:none;}
   .stat-num{font-size:22px;font-weight:800;color:#1F4E79;}
   .stat-label{font-size:10px;color:#999;margin-top:2px;}
+  .top-month{padding:16px 20px;background:linear-gradient(135deg,#FFF8E7 0%,#FDEBD0 100%);border-bottom:2px solid #F39C12;}
+  .top-month-title{font-size:12px;font-weight:800;color:#7B3F00;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  .top-month-cards{display:flex;gap:10px;flex-wrap:wrap;}
+  .top-month-card{background:white;border-radius:10px;padding:10px 14px;flex:1;min-width:120px;box-shadow:0 2px 8px rgba(0,0,0,.08);display:flex;align-items:center;gap:10px;}
+  .tm-medal{font-size:22px;flex-shrink:0;}
+  .tm-info{min-width:0;}
+  .tm-name{font-size:13px;font-weight:700;color:#1A1A1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tm-gain{font-size:15px;font-weight:800;color:#1A6B3A;margin-top:2px;}
+  .tm-gain-label{font-size:10px;color:#999;}
   .section-header{padding:8px 20px;font-size:11px;font-weight:700;letter-spacing:.5px;border-left:4px solid;}
   .section-Elite{background:#D6E4F0;color:#1F4E79;border-color:#1F4E79;}
   .section-Tournament{background:#D4EDDA;color:#1A6B3A;border-color:#1A6B3A;}
@@ -328,7 +375,7 @@ function publish() {
   .print-btn{position:fixed;bottom:20px;right:20px;background:#1F4E79;color:white;border:none;border-radius:8px;padding:11px 18px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2);z-index:999;}
   .share-btn{position:fixed;bottom:20px;left:20px;background:#25D366;color:white;border:none;border-radius:8px;padding:11px 18px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2);z-index:999;}
   .copied-toast{position:fixed;bottom:70px;left:20px;background:#333;color:white;padding:8px 14px;border-radius:6px;font-size:12px;display:none;z-index:999;}
-  @media(max-width:520px){.board{margin:8px;border-radius:8px;}.header{padding:14px;}.header-title{font-size:18px;}.header-date{display:none;}.stat{padding:10px 4px;}.stat-num{font-size:17px;}.stat-label{font-size:8px;}.section-header{padding:6px 12px;font-size:10px;}.player-row{grid-template-columns:32px 1fr 80px 80px;gap:8px;padding:9px 12px;}.badge-col{display:none;}.rank-badge{width:28px;height:28px;font-size:11px;}.rank-badge.top{font-size:13px;}.player-name{font-size:12px;}.player-age{font-size:9px;}.utr-value{font-size:16px;}.print-btn,.share-btn{padding:9px 14px;font-size:12px;}}
+  @media(max-width:520px){.board{margin:8px;border-radius:8px;}.header{padding:14px;}.header-title{font-size:18px;}.header-date{display:none;}.stat{padding:10px 4px;}.stat-num{font-size:17px;}.stat-label{font-size:8px;}.section-header{padding:6px 12px;font-size:10px;}.player-row{grid-template-columns:32px 1fr 80px 80px;gap:8px;padding:9px 12px;}.badge-col{display:none;}.rank-badge{width:28px;height:28px;font-size:11px;}.rank-badge.top{font-size:13px;}.player-name{font-size:12px;}.player-age{font-size:9px;}.utr-value{font-size:16px;}.print-btn,.share-btn{padding:9px 14px;font-size:12px;}.top-month-card{min-width:90px;padding:8px 10px;}.tm-name{font-size:11px;}.tm-gain{font-size:13px;}.tm-medal{font-size:18px;}}
   @media print{.print-btn,.share-btn{display:none;}body{background:white;}.board{box-shadow:none;margin:0;border-radius:0;max-width:100%;}}
 </style>
 </head>
@@ -340,13 +387,37 @@ function publish() {
 <script>
 const MEDALS=["🥇","🥈","🥉"];
 const LEVEL_ORDER=["Elite","Tournament","Advanced"];
+
+function getMonthKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function getMonthName(){return new Date().toLocaleDateString("en-US",{month:"long",year:"numeric"});}
+
 function render(players){
+  const currentMk=getMonthKey();
   const sorted=[...players].sort((a,b)=>b.utr-a.utr);
   const rated=players.filter(p=>p.utr>0);
   const avg=rated.length?(rated.reduce((s,p)=>s+p.utr,0)/rated.length).toFixed(2):"—";
   const top=rated.length?Math.max(...rated.map(p=>p.utr)).toFixed(2):"—";
   const elite=players.filter(p=>p.level==="Elite").length;
+
   let html=\`<div class="header"><div><div class="header-eyebrow">MATCHPOINT TENNIS CLUB — BAY PARKWAY, BROOKLYN</div><div class="header-title">Junior Player Rankings</div><div class="header-sub">Universal Tennis Rating (UTR) · Season 2026–2027</div></div><div class="header-date">Updated:<br>\${new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}</div></div><div class="stats"><div class="stat"><div class="stat-num">\${players.length}</div><div class="stat-label">Total Players</div></div><div class="stat"><div class="stat-num">\${avg}</div><div class="stat-label">Avg UTR</div></div><div class="stat"><div class="stat-num">\${top}</div><div class="stat-label">Highest UTR</div></div><div class="stat"><div class="stat-num">\${elite}</div><div class="stat-label">Elite Group</div></div></div>\`;
+
+  // Top of Month block
+  // Only show gainers whose monthKey matches current month
+  const gainers=players
+    .filter(p=>p.utr>0&&p.monthBase>0&&p.monthKey===currentMk&&(p.utr-p.monthBase)>0.01)
+    .map(p=>({...p,gain:parseFloat((p.utr-p.monthBase).toFixed(2))}))
+    .sort((a,b)=>b.gain-a.gain)
+    .slice(0,3);
+
+  if(gainers.length>0){
+    const mn=getMonthName();
+    html+=\`<div class="top-month"><div class="top-month-title">🏆 TOP GAINERS — \${mn}</div><div class="top-month-cards">\`;
+    gainers.forEach((p,i)=>{
+      html+=\`<div class="top-month-card"><div class="tm-medal">\${MEDALS[i]}</div><div class="tm-info"><div class="tm-name">\${p.name}</div><div class="tm-gain">+\${p.gain.toFixed(2)}</div><div class="tm-gain-label">UTR this month</div></div></div>\`;
+    });
+    html+=\`</div></div>\`;
+  }
+
   let rank=0;
   LEVEL_ORDER.forEach(level=>{
     const group=sorted.filter(p=>p.level===level);
@@ -387,6 +458,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then
   showToast('🚀 Published!');
 }
 
+initMonthlyBase();
 render();
 </script>
 </body>
