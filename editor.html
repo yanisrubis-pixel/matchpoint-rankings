@@ -26,7 +26,7 @@
   .section-Tournament  { background: #D4EDDA; color: #1A6B3A; border-color: #1A6B3A; }
   .section-Advanced    { background: #FDEBD0; color: #7B3F00; border-color: #E67E22; }
   /* Editor player row — wider to fit singles+doubles */
-  .player-row { display: grid; grid-template-columns: 44px 1fr 110px 1fr 70px; gap: 10px; align-items: center; padding: 10px 20px; border-bottom: 1px solid #F5F5F5; }
+  .player-row { display: grid; grid-template-columns: 44px 1fr 90px 110px 1fr 70px; gap: 10px; align-items: center; padding: 10px 20px; border-bottom: 1px solid #F5F5F5; }
   .player-row:hover { background: #F5F8FF; }
   .player-row.top3 { background: #F7FAFF; }
   .rank-badge { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
@@ -35,6 +35,7 @@
   .player-info { min-width: 0; }
   .player-name { font-weight: 600; font-size: 14px; color: #1A1A1A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .player-age  { font-size: 11px; color: #AAA; margin-top: 1px; }
+  .level-col { display: flex; align-items: center; }
   .level-badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-weight: 600; font-size: 10px; }
   .badge-Elite       { background: #D6E4F0; color: #1F4E79; }
   .badge-Tournament  { background: #D4EDDA; color: #1A6B3A; }
@@ -184,8 +185,8 @@ function render() {
       <div class="player-info">
         <div class="player-name">${p.utrId?`<a href="https://app.utrsports.net/profiles/${p.utrId}" target="_blank" style="color:#1A1A1A;text-decoration:none;border-bottom:1px dotted #AAA;">${p.name} ↗</a>`:p.name}</div>
         <div class="player-age">Age ${p.age}${p.utrId?' · ID: '+p.utrId:' · no ID'}</div>
-        <div style="margin-top:3px"><span class="level-badge badge-${level}">${level}</span></div>
       </div>
+      <div class="level-col"><span class="level-badge badge-${level}">${level}</span></div>
       <div class="utr-dual">
         <div class="utr-row">
           <span class="utr-icon">👤</span>
@@ -365,8 +366,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F4F8;}
 @media(max-width:520px){
   .board{margin:8px;border-radius:8px;}.header{padding:14px;}.header-title{font-size:18px;}.header-date{display:none;}
   .stat{padding:10px 4px;}.stat-num{font-size:17px;}.stat-label{font-size:8px;}
-  .player-row{grid-template-columns:28px 1fr 52px 90px 40px;gap:4px;padding:7px 8px;}
-  .player-row .level-col{display:flex;align-items:center;padding-left:0;}
+  .player-row{grid-template-columns:28px 1fr 58px 90px 40px;gap:4px;padding:7px 8px;}
+  .player-row .level-col{display:flex;align-items:center;padding-left:0;justify-self:start;margin-left:-22px;}
   .level-badge{font-size:8px;padding:2px 5px;}
   .mobile-badge{display:none;}
   .rank-badge{width:26px;height:26px;font-size:10px;}.rank-badge.top{font-size:12px;}
