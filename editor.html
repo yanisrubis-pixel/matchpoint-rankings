@@ -130,11 +130,30 @@ let players = loadPlayers();
 function getMonthKey() { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
 function loadMonthlyBase() { try { return JSON.parse(localStorage.getItem('mp_monthly')||'{}'); } catch(e) { return {}; } }
 function saveMonthlyBase(mb) { try { localStorage.setItem('mp_monthly', JSON.stringify(mb)); } catch(e) {} }
+
+// Фиксирует базу ОДИН РАЗ за месяц. При повторных вызовах — не перезаписывает.
+// Для новых игроков (кого ещё нет в базе) — добавляет их текущий UTR как базу.
 function initMonthlyBase() {
   const mk=getMonthKey(); let mb=loadMonthlyBase();
   const keys=Object.keys(mb).sort(); while(keys.length>2){delete mb[keys.shift()];}
-  if(!mb[mk]){ mb[mk]={}; players.forEach(p=>{if(p.utr>0)mb[mk][p.id]=p.utr;}); saveMonthlyBase(mb); }
+  if(!mb[mk]) mb[mk]={};
+  // Добавляем только тех, кого ещё нет в базе этого месяца
+  players.forEach(p=>{
+    if(p.utr>0 && !(p.id in mb[mk])) mb[mk][p.id]=p.utr;
+  });
+  saveMonthlyBase(mb);
   return mb;
+}
+
+// Получить прирост игрока за текущий месяц
+function getMonthlyGain(player) {
+  const mk=getMonthKey();
+  const mb=loadMonthlyBase();
+  if(!mb[mk]) return null;
+  const base=mb[mk][player.id];
+  if(!base || base===0 || player.utr===0) return null;
+  const diff=parseFloat((player.utr-base).toFixed(2));
+  return Math.abs(diff)<0.005 ? null : diff;
 }
 
 function today() { return new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}); }
@@ -175,9 +194,9 @@ function render() {
     const pctS=p.utr>0?Math.min((p.utr/10)*100,100).toFixed(1):0;
     const pctD=p.utrd>0?Math.min((p.utrd/10)*100,100).toFixed(1):0;
     let changeHtml='';
-    if(p.prevUtr&&p.prevUtr>0&&p.utr>0&&Math.abs(p.utr-p.prevUtr)>0.01){
-      const diff=(p.utr-p.prevUtr).toFixed(2);
-      changeHtml=diff>0?`<span class="utr-change up">▲+${diff}</span>`:`<span class="utr-change down">▼${diff}</span>`;
+    const mg=getMonthlyGain(p);
+    if(mg!==null){
+      changeHtml=mg>0?`<span class="utr-change up">▲+${mg.toFixed(2)}</span>`:`<span class="utr-change down">▼${mg.toFixed(2)}</span>`;
     }
     html+=`
     <div class="player-row ${isTop?'top3':''}">
@@ -236,7 +255,15 @@ function addPlayer() {
   const level=document.getElementById('f-level').value;
   if(!name){alert('Enter name');return;}
   const maxId=players.length?Math.max(...players.map(p=>p.id)):0;
-  players.push({id:maxId+1,name,age,utr,utrd,level,utrId,prevUtr:0});
+  const newPlayer={id:maxId+1,name,age,utr,utrd,level,utrId,prevUtr:0};
+  players.push(newPlayer);
+  // Сразу регистрируем monthBase для нового игрока
+  if(utr>0){
+    const mk=getMonthKey(); let mb=loadMonthlyBase();
+    if(!mb[mk]) mb[mk]={};
+    if(!(newPlayer.id in mb[mk])) mb[mk][newPlayer.id]=utr;
+    saveMonthlyBase(mb);
+  }
   savePlayers(players); render(); showToast('Added: '+name);
 }
 
@@ -279,8 +306,9 @@ document.addEventListener('click',e=>{if(e.target.id==='editModal')closeModal();
 
 function publish() {
   savePlayers(players);
-  const mk=getMonthKey(); let mb=loadMonthlyBase();
-  if(!mb[mk]){mb[mk]={};players.forEach(p=>{if(p.utr>0)mb[mk][p.id]=p.utr;});saveMonthlyBase(mb);}
+  // Перед публикацией запускаем initMonthlyBase — добавляет только новых игроков, не трогает существующих
+  const mb=initMonthlyBase();
+  const mk=getMonthKey();
   const monthBase=mb[mk]||{};
   const playersWithMonthly=players.map(p=>({...p,monthBase:monthBase[p.id]||0,monthKey:mk}));
   const playerData=JSON.stringify(playersWithMonthly);
@@ -415,8 +443,8 @@ function render(players){
   html+=\`<div class="stats"><div class="stat"><div class="stat-num">\${players.length}</div><div class="stat-label">Total Players</div></div><div class="stat"><div class="stat-num">\${avg}</div><div class="stat-label">Avg Singles</div></div><div class="stat"><div class="stat-num">\${top}</div><div class="stat-label">Highest UTR</div></div><div class="stat"><div class="stat-num">\${elite}</div><div class="stat-label">Elite Group</div></div></div>\`;
   html+=\`<div class="sort-bar"><span class="sort-label">Sort by:</span><button id="btn-s" class="sort-btn active-s" onclick="setSortMode('singles')"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg> Singles</button><button id="btn-d" class="sort-btn" onclick="setSortMode('doubles')"><svg width="16" height="14" viewBox="0 0 32 24" fill="currentColor"><path d="M8 12c2.2 0 4-1.8 4-4S10.2 4 8 4 4 5.8 4 8s1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4zm16-2c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/></svg> Doubles</button></div>\`;
 
-  // Top of month gainers
-  const gainers=players.filter(p=>p.utr>0&&p.monthBase>0&&p.monthKey===currentMk&&(p.utr-p.monthBase)>0.01)
+  // Top of month gainers — все у кого monthBase>0 и реальный прирост
+  const gainers=players.filter(p=>p.utr>0&&p.monthBase>0&&(p.utr-p.monthBase)>0.005)
     .map(p=>({...p,gain:parseFloat((p.utr-p.monthBase).toFixed(2))}))
     .sort((a,b)=>b.gain-a.gain).slice(0,3);
   if(gainers.length>0){
@@ -446,9 +474,9 @@ function renderTable(players){
     const pctS=p.utr>0?Math.min((p.utr/10)*100,100).toFixed(1):0;
     const pctD=p.utrd>0?Math.min((p.utrd/10)*100,100).toFixed(1):0;
     let utrChange='';
-    if(p.prevUtr&&p.prevUtr>0&&p.utr>0&&Math.abs(p.utr-p.prevUtr)>0.01){
-      const diff=(p.utr-p.prevUtr).toFixed(2);
-      utrChange=diff>0?\`<span class="utr-change up">▲+\${diff}</span>\`:\`<span class="utr-change down">▼\${diff}</span>\`;
+    if(p.monthBase>0&&p.utr>0&&Math.abs(p.utr-p.monthBase)>=0.005){
+      const diff=parseFloat((p.utr-p.monthBase).toFixed(2));
+      utrChange=diff>0?\`<span class="utr-change up">▲+\${diff.toFixed(2)}</span>\`:\`<span class="utr-change down">▼\${diff.toFixed(2)}</span>\`;
     }
     html+=\`<div class="player-row \${isTop?'top3':''}">
       <div class="rank-badge \${isTop?'top':'normal'}">\${badge}</div>
