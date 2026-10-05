@@ -127,33 +127,63 @@ function savePlayers(p) { try { localStorage.setItem('mp_editor', JSON.stringify
 
 let players = loadPlayers();
 
-function getMonthKey() { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
-function loadMonthlyBase() { try { return JSON.parse(localStorage.getItem('mp_monthly')||'{}'); } catch(e) { return {}; } }
-function saveMonthlyBase(mb) { try { localStorage.setItem('mp_monthly', JSON.stringify(mb)); } catch(e) {} }
+function getYearKey() { return String(new Date().getFullYear()); }
+function loadYearlyBase() { try { return JSON.parse(localStorage.getItem('mp_yearly')||'{}'); } catch(e) { return {}; } }
+function saveYearlyBase(yb) { try { localStorage.setItem('mp_yearly', JSON.stringify(yb)); } catch(e) {} }
 
-// Фиксирует базу ОДИН РАЗ за месяц. При повторных вызовах — не перезаписывает.
+// Фиксирует базу ОДИН РАЗ за год. При повторных вызовах — не перезаписывает.
 // Для новых игроков (кого ещё нет в базе) — добавляет их текущий UTR как базу.
-function initMonthlyBase() {
-  const mk=getMonthKey(); let mb=loadMonthlyBase();
-  const keys=Object.keys(mb).sort(); while(keys.length>2){delete mb[keys.shift()];}
-  if(!mb[mk]) mb[mk]={};
-  // Добавляем только тех, кого ещё нет в базе этого месяца
+function initYearlyBase() {
+  const yk=getYearKey(); let yb=loadYearlyBase();
+  if(!yb[yk]) yb[yk]={};
   players.forEach(p=>{
-    if(p.utr>0 && !(p.id in mb[mk])) mb[mk][p.id]=p.utr;
+    if(p.utr>0 && !(p.id in yb[yk])) yb[yk][p.id]=p.utr;
+    if(p.utrd>0 && !(`d_${p.id}` in yb[yk])) yb[yk][`d_${p.id}`]=p.utrd;
   });
-  saveMonthlyBase(mb);
-  return mb;
+  saveYearlyBase(yb);
+  return yb;
 }
 
-// Получить прирост игрока за текущий месяц
-function getMonthlyGain(player) {
-  const mk=getMonthKey();
-  const mb=loadMonthlyBase();
-  if(!mb[mk]) return null;
-  const base=mb[mk][player.id];
+// Получить прирост игрока за текущий год
+function getYearlyGain(player) {
+  const yk=getYearKey();
+  const yb=loadYearlyBase();
+  if(!yb[yk]) return null;
+  const base=yb[yk][player.id];
   if(!base || base===0 || player.utr===0) return null;
   const diff=parseFloat((player.utr-base).toFixed(2));
   return Math.abs(diff)<0.005 ? null : diff;
+}
+
+function getYearlyGainD(player) {
+  const yk=getYearKey();
+  const yb=loadYearlyBase();
+  if(!yb[yk]) return null;
+  const base=yb[yk][`d_${player.id}`];
+  if(!base || base===0 || player.utrd===0) return null;
+  const diff=parseFloat((player.utrd-base).toFixed(2));
+  return Math.abs(diff)<0.005 ? null : diff;
+}
+
+// Получить сдвиг позиции игрока за год (+ = вверх, - = вниз)
+function getRankChange(player, sortedNow) {
+  const yk=getYearKey();
+  const yb=loadYearlyBase();
+  if(!yb[yk]) return null;
+  // Восстанавливаем ранжировку на начало года: каждый игрок с UTR из базы
+  const baseRanking=players
+    .filter(p=>yb[yk][p.id]>0)
+    .map(p=>({id:p.id,baseUtr:yb[yk][p.id]}))
+    .sort((a,b)=>b.baseUtr-a.baseUtr);
+  const baseRankMap={};
+  baseRanking.forEach((p,i)=>baseRankMap[p.id]=i+1);
+  const currentRankMap={};
+  sortedNow.forEach((p,i)=>currentRankMap[p.id]=i+1);
+  const br=baseRankMap[player.id];
+  const cr=currentRankMap[player.id];
+  if(!br||!cr) return null;
+  const diff=br-cr; // положительное = поднялся (был 5, стал 3 → +2)
+  return diff===0?null:diff;
 }
 
 function today() { return new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}); }
@@ -194,9 +224,14 @@ function render() {
     const pctS=p.utr>0?Math.min((p.utr/10)*100,100).toFixed(1):0;
     const pctD=p.utrd>0?Math.min((p.utrd/10)*100,100).toFixed(1):0;
     let changeHtml='';
-    const mg=getMonthlyGain(p);
+    const mg=getYearlyGain(p);
     if(mg!==null){
       changeHtml=mg>0?`<span class="utr-change up">▲+${mg.toFixed(2)}</span>`:`<span class="utr-change down">▼${mg.toFixed(2)}</span>`;
+    }
+    let changeHtmlD='';
+    const mgd=getYearlyGainD(p);
+    if(mgd!==null){
+      changeHtmlD=mgd>0?`<span class="utr-change up">▲+${mgd.toFixed(2)}</span>`:`<span class="utr-change down">▼${mgd.toFixed(2)}</span>`;
     }
     html+=`
     <div class="player-row ${isTop?'top3':''}">
@@ -215,6 +250,7 @@ function render() {
         <div class="utr-row">
           <span class="utr-icon">👥</span>
           <span class="utr-val ${p.utrd>0?'':'zero'}">${p.utrd>0?p.utrd.toFixed(2):'—'}</span>
+          ${changeHtmlD}
         </div>
       </div>
       <div class="bar-dual">
@@ -257,12 +293,13 @@ function addPlayer() {
   const maxId=players.length?Math.max(...players.map(p=>p.id)):0;
   const newPlayer={id:maxId+1,name,age,utr,utrd,level,utrId,prevUtr:0};
   players.push(newPlayer);
-  // Сразу регистрируем monthBase для нового игрока
-  if(utr>0){
-    const mk=getMonthKey(); let mb=loadMonthlyBase();
-    if(!mb[mk]) mb[mk]={};
-    if(!(newPlayer.id in mb[mk])) mb[mk][newPlayer.id]=utr;
-    saveMonthlyBase(mb);
+  // Сразу регистрируем yearlyBase для нового игрока
+  if(utr>0||utrd>0){
+    const yk=getYearKey(); let yb=loadYearlyBase();
+    if(!yb[yk]) yb[yk]={};
+    if(utr>0 && !(newPlayer.id in yb[yk])) yb[yk][newPlayer.id]=utr;
+    if(utrd>0 && !(`d_${newPlayer.id}` in yb[yk])) yb[yk][`d_${newPlayer.id}`]=utrd;
+    saveYearlyBase(yb);
   }
   savePlayers(players); render(); showToast('Added: '+name);
 }
@@ -306,12 +343,30 @@ document.addEventListener('click',e=>{if(e.target.id==='editModal')closeModal();
 
 function publish() {
   savePlayers(players);
-  // Перед публикацией запускаем initMonthlyBase — добавляет только новых игроков, не трогает существующих
-  const mb=initMonthlyBase();
-  const mk=getMonthKey();
-  const monthBase=mb[mk]||{};
-  const playersWithMonthly=players.map(p=>({...p,monthBase:monthBase[p.id]||0,monthKey:mk}));
-  const playerData=JSON.stringify(playersWithMonthly);
+  // Перед публикацией регистрируем базу за год — добавляет только новых игроков
+  const yb=initYearlyBase();
+  const yk=getYearKey();
+  const yearBase=yb[yk]||{};
+  // Вычисляем ранги сейчас для расчёта сдвига позиций
+  const sortedNow=[...players].filter(p=>p.utr>0).sort((a,b)=>b.utr-a.utr);
+  const currentRankMap={};
+  sortedNow.forEach((p,i)=>currentRankMap[p.id]=i+1);
+  // Ранги на начало года
+  const baseRanking=players
+    .filter(p=>yearBase[p.id]>0)
+    .map(p=>({id:p.id,baseUtr:yearBase[p.id]}))
+    .sort((a,b)=>b.baseUtr-a.baseUtr);
+  const baseRankMap={};
+  baseRanking.forEach((p,i)=>baseRankMap[p.id]=i+1);
+  const playersWithYearly=players.map(p=>{
+    const yBase=yearBase[p.id]||0;
+    const yBaseD=yearBase[`d_${p.id}`]||0;
+    const cr=currentRankMap[p.id];
+    const br=baseRankMap[p.id];
+    const rankChange=(br&&cr)?br-cr:null;
+    return {...p,yearBase:yBase,yearBaseD:yBaseD,yearKey:yk,rankChange:rankChange||0};
+  });
+  const playerData=JSON.stringify(playersWithYearly);
 
   const publicHtml=`<!DOCTYPE html>
 <html lang="en">
@@ -420,8 +475,8 @@ const MEDALS=["🥇","🥈","🥉"];
 const LEVEL_ORDER=["Elite","Tournament","Advanced"];
 let sortMode='singles'; // 'singles' or 'doubles'
 
-function getMonthKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
-function getMonthName(){return new Date().toLocaleDateString("en-US",{month:"long",year:"numeric"});}
+function getYearKey(){return String(new Date().getFullYear());}
+function getYearName(){return String(new Date().getFullYear());}
 
 function setSortMode(mode){
   sortMode=mode;
@@ -432,7 +487,6 @@ function setSortMode(mode){
 
 function render(players){
   window._players=players;
-  const currentMk=getMonthKey();
   const rated=players.filter(p=>p.utr>0);
   const ratedD=players.filter(p=>p.utrd>0);
   const avg=rated.length?(rated.reduce((s,p)=>s+p.utr,0)/rated.length).toFixed(2):"—";
@@ -443,13 +497,17 @@ function render(players){
   html+=\`<div class="stats"><div class="stat"><div class="stat-num">\${players.length}</div><div class="stat-label">Total Players</div></div><div class="stat"><div class="stat-num">\${avg}</div><div class="stat-label">Avg Singles</div></div><div class="stat"><div class="stat-num">\${top}</div><div class="stat-label">Highest UTR</div></div><div class="stat"><div class="stat-num">\${elite}</div><div class="stat-label">Elite Group</div></div></div>\`;
   html+=\`<div class="sort-bar"><span class="sort-label">Sort by:</span><button id="btn-s" class="sort-btn active-s" onclick="setSortMode('singles')"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg> Singles</button><button id="btn-d" class="sort-btn" onclick="setSortMode('doubles')"><svg width="16" height="14" viewBox="0 0 32 24" fill="currentColor"><path d="M8 12c2.2 0 4-1.8 4-4S10.2 4 8 4 4 5.8 4 8s1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4zm16-2c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/></svg> Doubles</button></div>\`;
 
-  // Top of month gainers — все у кого monthBase>0 и реальный прирост
-  const gainers=players.filter(p=>p.utr>0&&p.monthBase>0&&(p.utr-p.monthBase)>0.005)
-    .map(p=>({...p,gain:parseFloat((p.utr-p.monthBase).toFixed(2))}))
+  // Top gainers за год — все у кого yearBase>0 и реальный прирост
+  const gainers=players.filter(p=>p.utr>0&&p.yearBase>0&&(p.utr-p.yearBase)>0.005)
+    .map(p=>({...p,gain:parseFloat((p.utr-p.yearBase).toFixed(2))}))
     .sort((a,b)=>b.gain-a.gain).slice(0,3);
   if(gainers.length>0){
-    html+=\`<div class="top-month"><div class="top-month-title">🏆 TOP GAINERS — \${getMonthName()}</div><div class="top-month-cards">\`;
-    gainers.forEach((p,i)=>{html+=\`<div class="top-month-card"><div class="tm-medal">\${MEDALS[i]}</div><div><div class="tm-name">\${p.name}</div><div class="tm-gain">+\${p.gain.toFixed(2)}</div><div class="tm-gain-label">Singles UTR this month</div></div></div>\`;});
+    html+=\`<div class="top-month"><div class="top-month-title">🏆 TOP GAINERS — \${getYearName()}</div><div class="top-month-cards">\`;
+    gainers.forEach((p,i)=>{
+      const rc=p.rankChange;
+      const rcHtml=rc&&rc!==0?(rc>0?\`<span style="color:#1A6B3A;font-size:10px;font-weight:700;">↑\${rc} places</span>\`:\`<span style="color:#E74C3C;font-size:10px;font-weight:700;">↓\${Math.abs(rc)} places</span>\`):'';
+      html+=\`<div class="top-month-card"><div class="tm-medal">\${MEDALS[i]}</div><div><div class="tm-name">\${p.name}</div><div class="tm-gain">+\${p.gain.toFixed(2)} UTR</div><div class="tm-gain-label">\${rcHtml}</div></div></div>\`;
+    });
     html+=\`</div></div>\`;
   }
 
@@ -474,12 +532,19 @@ function renderTable(players){
     const pctS=p.utr>0?Math.min((p.utr/10)*100,100).toFixed(1):0;
     const pctD=p.utrd>0?Math.min((p.utrd/10)*100,100).toFixed(1):0;
     let utrChange='';
-    if(p.monthBase>0&&p.utr>0&&Math.abs(p.utr-p.monthBase)>=0.005){
-      const diff=parseFloat((p.utr-p.monthBase).toFixed(2));
+    if(p.yearBase>0&&p.utr>0&&Math.abs(p.utr-p.yearBase)>=0.005){
+      const diff=parseFloat((p.utr-p.yearBase).toFixed(2));
       utrChange=diff>0?\`<span class="utr-change up">▲+\${diff.toFixed(2)}</span>\`:\`<span class="utr-change down">▼\${diff.toFixed(2)}</span>\`;
     }
+    let utrChangeD='';
+    if(p.yearBaseD>0&&p.utrd>0&&Math.abs(p.utrd-p.yearBaseD)>=0.005){
+      const diffD=parseFloat((p.utrd-p.yearBaseD).toFixed(2));
+      utrChangeD=diffD>0?\`<span class="utr-change up">▲+\${diffD.toFixed(2)}</span>\`:\`<span class="utr-change down">▼\${diffD.toFixed(2)}</span>\`;
+    }
+    const rc=p.rankChange;
+    const rankChangeHtml=rc&&rc!==0?(rc>0?\`<span style="font-size:9px;color:#1A6B3A;font-weight:700;display:block;">↑\${rc}</span>\`:\`<span style="font-size:9px;color:#E74C3C;font-weight:700;display:block;">↓\${Math.abs(rc)}</span>\`):'';
     html+=\`<div class="player-row \${isTop?'top3':''}">
-      <div class="rank-badge \${isTop?'top':'normal'}">\${badge}</div>
+      <div class="rank-badge \${isTop?'top':'normal'}" style="flex-direction:column;gap:0;">\${badge}\${rankChangeHtml}</div>
       <div class="player-info">
         <div class="player-name">\${p.name}</div>
         <div class="player-age">Age \${p.age}</div>
@@ -488,7 +553,7 @@ function renderTable(players){
       <div class="level-col"><span class="level-badge badge-\${level}">\${level}</span></div>
       <div class="utr-dual">
         <div class="utr-row"><span class="utr-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="#1F4E79"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg></span><span class="utr-val \${p.utr>0?'':'zero'}">\${p.utr>0?p.utr.toFixed(2):'—'}</span>\${utrChange}</div>
-        <div class="utr-row"><span class="utr-icon"><svg width="16" height="13" viewBox="0 0 32 24" fill="#1F4E79"><path d="M8 12c2.2 0 4-1.8 4-4S10.2 4 8 4 4 5.8 4 8s1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4zm16-2c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/></svg></span><span class="utr-val-d \${p.utrd>0?'':'zero'}">\${p.utrd>0?p.utrd.toFixed(2):'—'}</span></div>
+        <div class="utr-row"><span class="utr-icon"><svg width="16" height="13" viewBox="0 0 32 24" fill="#1F4E79"><path d="M8 12c2.2 0 4-1.8 4-4S10.2 4 8 4 4 5.8 4 8s1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4zm16-2c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/></svg></span><span class="utr-val-d \${p.utrd>0?'':'zero'}">\${p.utrd>0?p.utrd.toFixed(2):'—'}</span>\${utrChangeD}</div>
       </div>
       <div class="bar-dual">
         <div class="bar-bg"><div class="bar-fill-s" style="width:\${pctS}%"></div></div>
@@ -517,7 +582,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then
   showToast('🚀 Published!');
 }
 
-initMonthlyBase();
+initYearlyBase();
 render();
 </script>
 </body>
